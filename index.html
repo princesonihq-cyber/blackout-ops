@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#05070b" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>BLACKOUT OPS — Tactical FPS</title>
+<link rel="stylesheet" href="styles.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three.module.js"
+  }
+}
+</script>
+</head>
+<body>
+<div id="app">
+  <canvas id="game"></canvas>
+
+  <!-- ===================== HUD ===================== -->
+  <div id="hud" class="hidden">
+    <div class="hud-top">
+      <div class="objective panel">
+        <span class="tag">OPERATION NIGHTFALL</span>
+        <span class="obj-main" id="objective-text">CLEAR HOSTILE WAVES</span>
+      </div>
+
+      <div class="compass-wrap">
+        <canvas id="compass" width="440" height="36"></canvas>
+        <div class="compass-needle"></div>
+      </div>
+
+      <div class="top-right">
+        <div class="minimap-shell">
+          <canvas id="minimap" width="180" height="180"></canvas>
+          <div class="mm-corner tl"></div><div class="mm-corner tr"></div>
+          <div class="mm-corner bl"></div><div class="mm-corner br"></div>
+          <div class="mm-label">SECTOR 7G</div>
+          <div class="mm-sweep"></div>
+        </div>
+        <div id="killfeed"></div>
+      </div>
+    </div>
+
+    <div class="hud-bottom">
+      <div class="vitals-stack">
+        <div class="equipment panel">
+          <span class="eq-item" title="Frag grenade">
+            <kbd>G</kbd><span class="eq-label">FRAG</span><b id="grenade-count">2</b>
+          </span>
+          <span class="eq-item" id="uav-stat" title="UAV killstreak">
+            <kbd>4</kbd><span class="eq-label">UAV</span>
+          </span>
+          <span class="eq-item" id="strike-stat" title="Airstrike killstreak">
+            <kbd>5</kbd><span class="eq-label">AIRSTRIKE</span>
+          </span>
+        </div>
+        <div class="vitals panel">
+          <div class="vitals-top">
+            <span class="tag">VITALS</span>
+            <span id="health-num">100</span>
+          </div>
+          <div class="health-bar"><div id="health-fill"></div></div>
+          <div class="armor-row">
+            <span class="tag">ARMOR</span>
+            <div class="armor-pips" id="armor-pips">
+              <i></i><i></i><i></i><i></i><i></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scoreboard">
+        <div class="stat"><span class="tag">WAVE</span><span id="wave-num">1</span></div>
+        <div class="stat"><span class="tag">HOSTILES</span><span id="hostile-num">0</span></div>
+        <div class="stat"><span class="tag">SCORE</span><span id="score-num">0</span></div>
+      </div>
+
+      <div class="weapon-panel panel">
+        <div class="weapon-name" id="weapon-name">M4A1 VANGUARD</div>
+        <div class="ammo-row">
+          <span id="ammo-mag">30</span>
+          <span class="slash">/</span>
+          <span id="ammo-reserve">180</span>
+        </div>
+        <div class="reload-track"><div id="reload-fill"></div></div>
+        <div class="weapon-slots" id="weapon-slots">
+          <span class="slot active" data-slot="0">1</span>
+          <span class="slot" data-slot="1">2</span>
+          <span class="slot" data-slot="2">3</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="grade"></div>
+    <div id="uav-markers"></div>
+
+    <div id="crosshair">
+      <div class="ch ch-t"></div>
+      <div class="ch ch-b"></div>
+      <div class="ch ch-l"></div>
+      <div class="ch ch-r"></div>
+      <div class="ch-dot"></div>
+      <div id="hitmarker"><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div id="hit-dir"><i></i></div>
+
+    <div id="damage-vignette"></div>
+    <div id="low-health"></div>
+    <div id="dmg-numbers"></div>
+
+    <div id="wave-banner">
+      <div class="banner-kicker">// INCOMING</div>
+      <div id="banner-main">WAVE 1</div>
+      <div id="banner-sub">HOSTILES INBOUND</div>
+    </div>
+
+    <div id="multikill">
+      <div class="mk-title"></div>
+      <div class="mk-sub"></div>
+    </div>
+
+    <div id="toast"></div>
+    <div id="fps">FPS 60</div>
+  </div>
+
+  <!-- ===================== MAIN MENU ===================== -->
+  <div id="menu" class="overlay">
+    <div class="menu-grid">
+      <div class="menu-copy">
+        <div class="eyebrow"><span class="dot"></span> CLASSIFIED // TIER ONE</div>
+        <h1>BLACKOUT<br><span>OPS</span></h1>
+        <div class="subhead">OPERATION NIGHTFALL</div>
+        <p class="blurb">
+          The grid is dark. A hostile cell has seized the relay yard and they know you're coming.
+          Hold the sector. Clear every wave. There is no extraction.
+        </p>
+
+        <div class="menu-actions">
+          <button id="deploy" class="btn-primary">
+            <span class="btn-kicker" id="deploy-kicker">CLICK TO</span>
+            <span class="btn-label">DEPLOY</span>
+          </button>
+          <button id="gfx-toggle" class="btn-ghost" title="Toggle Graphics Preset">
+            <span class="btn-kicker">GRAPHICS QUALITY</span>
+            <span class="btn-label" id="gfx-val">ULTRA REALISTIC</span>
+          </button>
+          <div class="sens">
+            <label for="sens">LOOK SENSITIVITY <span id="sens-val">1.0</span></label>
+            <input type="range" id="sens" min="0.3" max="2.2" step="0.05" value="1" />
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="ctrl"><kbd>W A S D</kbd><span>MOVE</span></div>
+          <div class="ctrl"><kbd>SHIFT</kbd><span>SPRINT / TAC SPRINT</span></div>
+          <div class="ctrl"><kbd>C / CTRL</kbd><span>CROUCH / SLIDE</span></div>
+          <div class="ctrl"><kbd>Z</kbd><span>PRONE / DIVE</span></div>
+          <div class="ctrl"><kbd>SPACE</kbd><span>JUMP / STAND</span></div>
+          <div class="ctrl"><kbd>N</kbd><span>AUTO-RUN</span></div>
+          <div class="ctrl"><kbd>RMB</kbd><span>AIM DOWN SIGHT</span></div>
+          <div class="ctrl"><kbd>LMB</kbd><span>FIRE</span></div>
+          <div class="ctrl"><kbd>R</kbd><span>RELOAD</span></div>
+          <div class="ctrl"><kbd>1 2 3</kbd><span>WEAPONS (2 SWAP)</span></div>
+          <div class="ctrl"><kbd>F / V</kbd><span>MELEE</span></div>
+          <div class="ctrl"><kbd>G / X</kbd><span>FRAG GRENADE</span></div>
+          <div class="ctrl"><kbd>Q / 4</kbd><span>UAV RECON</span></div>
+          <div class="ctrl"><kbd>5 / 6</kbd><span>AIRSTRIKE</span></div>
+          <div class="ctrl"><kbd>T / E</kbd><span>TACTICAL LIGHT</span></div>
+          <div class="ctrl"><kbd>B</kbd><span>INSPECT WEAPON</span></div>
+        </div>
+        <div class="touch-help">TOUCH CONTROLS · JOYSTICK DRAG SPRINT · DEDICATED PRONE/SLIDE/DIVE · RESPONSIVE HUD</div>
+      </div>
+      <div class="menu-side">
+        <div class="brief panel">
+          <div class="brief-head"><span class="blink"></span> MISSION BRIEF</div>
+          <ul>
+            <li><b>01</b> Hold the relay yard against escalating waves.</li>
+            <li><b>02</b> Headshots deal 2.6× damage. Aim for the visor.</li>
+            <li><b>03</b> Health regenerates after 5 seconds out of contact.</li>
+            <li><b>04</b> Watch the red laser sights — they fire right after.</li>
+            <li><b>05</b> Killstreaks: 5 kills = UAV, 10 kills = airstrike.</li>
+            <li><b>06</b> Rushers charge. Heavies soak. Juggernauts hit like a truck.</li>
+          </ul>
+          <div class="brief-foot">THREAT LEVEL <span>SEVERE</span></div>
+        </div>
+        <div class="best-run">BEST RUN <span id="best-stat">WAVE 0 · 0 PTS</span></div>
+        <div class="tagline">"ALONE IN THE DARK. STILL DANGEROUS."</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PAUSE ===================== -->
+  <div id="pause" class="overlay compact hidden">
+    <div class="modal panel">
+      <div class="eyebrow"><span class="dot"></span> OPERATION SUSPENDED</div>
+      <h2>PAUSED</h2>
+      <p class="muted">The sector is holding. For now.</p>
+      <button id="resume" class="btn-primary small"><span class="btn-label">RESUME</span></button>
+      <button id="pause-gfx-toggle" class="btn-ghost">GRAPHICS // <span id="pause-gfx-val">ULTRA REALISTIC</span></button>
+      <button id="pause-restart" class="btn-ghost">RESTART OPERATION</button>
+      <div class="modal-hint">Press <kbd>ESC</kbd> to resume · <kbd>Q</kbd> to quit to menu</div>
+    </div>
+  </div>
+
+  <!-- ===================== GAME OVER ===================== -->
+  <div id="gameover" class="overlay compact hidden">
+    <div class="modal panel wide">
+      <div class="eyebrow danger"><span class="dot"></span> SIGNAL LOST</div>
+      <h2>K.I.A.</h2>
+      <p class="muted">The relay yard went quiet. Command is not sending another team.</p>
+      <div class="stats">
+        <div class="stat-cell"><span>WAVES CLEARED</span><b id="go-waves">0</b></div>
+        <div class="stat-cell"><span>ELIMINATIONS</span><b id="go-kills">0</b></div>
+        <div class="stat-cell"><span>HEADSHOTS</span><b id="go-heads">0</b></div>
+        <div class="stat-cell"><span>ACCURACY</span><b id="go-acc">0%</b></div>
+        <div class="stat-cell"><span>SCORE</span><b id="go-score">0</b></div>
+        <div class="stat-cell"><span>TIME SURVIVED</span><b id="go-time">0:00</b></div>
+      </div>
+      <button id="retry" class="btn-primary small"><span class="btn-label">REDEPLOY</span></button>
+      <button id="to-menu" class="btn-ghost">RETURN TO MENU</button>
+    </div>
+  </div>
+
+  <!-- ===================== TOUCH CONTROLS ===================== -->
+  <div id="touch" class="hidden">
+    <div id="touch-look"></div>
+
+    <div id="touch-stick" aria-label="Movement joystick">
+      <div class="stick-base"><div class="stick-knob"></div></div>
+      <span class="stick-label">MOVE</span>
+    </div>
+
+    <button class="tbtn t-pause" data-act="pause" aria-label="Pause">II</button>
+    <button class="tbtn t-streak t-uav" data-act="uav" aria-label="UAV">UAV<b>0</b></button>
+    <button class="tbtn t-streak t-strike" data-act="strike" aria-label="Airstrike">AIR<b>0</b></button>
+
+    <button class="tbtn t-sprint" data-act="sprint">SPRINT</button>
+    <button class="tbtn t-crouch" data-act="crouch">CROUCH</button>
+    <button class="tbtn t-prone" data-act="prone">PRONE</button>
+    <button class="tbtn t-jump" data-act="jump">JUMP</button>
+    <button class="tbtn t-reload" data-act="reload">RELOAD</button>
+    <button class="tbtn t-swap" data-act="swap">SWAP</button>
+    <button class="tbtn t-light" data-act="light" aria-label="Flashlight">LIGHT</button>
+    <button class="tbtn t-grenade" data-act="grenade">FRAG<b>2</b></button>
+    <button class="tbtn t-knife" data-act="knife">KNIFE</button>
+    <button class="tbtn t-ads" data-act="ads">AIM</button>
+    <button class="tbtn t-fire" data-act="fire">FIRE</button>
+
+    <div id="rotate-hint">BEST IN LANDSCAPE<span>ROTATE YOUR DEVICE</span></div>
+  </div>
+
+  <div id="boot-error" class="hidden"></div>
+</div>
+<script>
+  // Fallback if the game module fails to load (for example opened via file://).
+  // Once the module boots it sets __BLACKOUT_LOADED__, so runtime errors after
+  // that point are handled in-game instead of blanking the screen.
+  function showBootError(message) {
+    if (window.__BLACKOUT_LOADED__) return;
+    var el = document.getElementById('boot-error');
+    if (!el) return;
+    el.classList.remove('hidden');
+    el.textContent = 'SYSTEM FAULT // ' + (message || 'Failed to load game assets. Run start.bat, then open http://localhost:8080');
+  }
+  window.addEventListener('error', function (e) {
+    showBootError(e.message);
+  });
+  window.addEventListener('unhandledrejection', function () {
+    showBootError('Failed to load game assets. Run start.bat, then open http://localhost:8080');
+  });
+  setTimeout(function () {
+    if (!window.__BLACKOUT_LOADED__) {
+      showBootError('Still loading… If this stays blank, run start.bat and open http://localhost:8080');
+    }
+  }, 8000);
+</script>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
