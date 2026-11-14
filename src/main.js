@@ -866,6 +866,40 @@ const pauseGfxBtn = $('pause-gfx-toggle');
 if (pauseGfxBtn) pauseGfxBtn.addEventListener('click', cycleGraphicsTier);
 updateGfxUI();
 
+// Landing page interactive tabs & audio test
+const soundCheckBtn = $('menu-sound-check');
+if (soundCheckBtn) {
+  soundCheckBtn.addEventListener('click', () => {
+    audio.init();
+    audio.uiClick();
+    ui.toast('TACTICAL AUDIO ONLINE // 3D SYNTH ENGINE');
+  });
+}
+
+document.querySelectorAll('.c-tab').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.c-tab').forEach((b) => b.classList.remove('active'));
+    document.querySelectorAll('.controls-pane').forEach((p) => p.classList.remove('active'));
+    btn.classList.add('active');
+    const target = $(`ctrl-pane-${tab}`);
+    if (target) target.classList.add('active');
+    try { audio.uiClick(); } catch (e) {}
+  });
+});
+
+document.querySelectorAll('.d-tab').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.dossier;
+    document.querySelectorAll('.d-tab').forEach((b) => b.classList.remove('active'));
+    document.querySelectorAll('.dossier-pane').forEach((p) => p.classList.remove('active'));
+    btn.classList.add('active');
+    const target = $(`dossier-${tab}`);
+    if (target) target.classList.add('active');
+    try { audio.uiClick(); } catch (e) {}
+  });
+});
+
 let hasLockedOnce = false;
 document.addEventListener('pointerlockchange', () => {
   const locked = document.pointerLockElement === canvas;
