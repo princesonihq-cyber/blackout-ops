@@ -243,7 +243,6 @@ let gameOverTimer = 0;
 let deathCamArmed = false;
 let autoRun = false;
 let proneStance = false;
-let touchProne = false;
 
 // Set when the browser refuses pointer lock (iframe, automation, permissions)
 // or when the device is touch-first. The game stays playable without a mouse.
