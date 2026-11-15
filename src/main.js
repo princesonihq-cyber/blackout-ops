@@ -1149,8 +1149,11 @@ function clearTouchState() {
 }
 
 function showTouch() {
-  if (!IS_TOUCH || !touchEl) return;
-  touchEl.classList.remove('hidden');
+  if (!touchEl) return;
+  const hasCustomHud = !!localStorage.getItem('bo_custom_hud');
+  if (IS_TOUCH || hasCustomHud || FORCE_TOUCH || document.documentElement.classList.contains('touch')) {
+    touchEl.classList.remove('hidden');
+  }
   applyCustomHudLayout();
 }
 
@@ -1246,6 +1249,7 @@ function openCustomHud() {
   const overlay = $('custom-hud-overlay');
   if (overlay) overlay.classList.remove('hidden');
   if (touchEl) touchEl.classList.remove('hidden');
+  loadCustomHud();
   applyCustomHudLayout();
   const defaultSelect = document.querySelector('[data-hud-id="fire"]') || document.querySelector('[data-hud-id="stick"]');
   selectHudElement(defaultSelect);
@@ -1258,19 +1262,35 @@ function closeCustomHud() {
   const overlay = $('custom-hud-overlay');
   if (overlay) overlay.classList.add('hidden');
   if (game.mode !== 'playing') {
-    if (touchEl && !IS_TOUCH) touchEl.classList.add('hidden');
+    if (touchEl && !IS_TOUCH && !localStorage.getItem('bo_custom_hud')) touchEl.classList.add('hidden');
   }
   if (selectedHudEl) selectedHudEl.classList.remove('selected');
   selectedHudEl = null;
   dragPointerId = null;
+  draggingHudEl = null;
 }
 
 function saveCustomHud() {
   try {
+    document.querySelectorAll('[data-hud-id]').forEach((el) => {
+      const id = el.dataset.hudId;
+      if (!id) return;
+      const rect = el.getBoundingClientRect();
+      if (!customHudLayout[id]) customHudLayout[id] = {};
+      const leftPx = el.style.left ? parseFloat(el.style.left) : rect.left;
+      const topPx = el.style.top ? parseFloat(el.style.top) : rect.top;
+      customHudLayout[id].left = `${Math.round(leftPx)}px`;
+      customHudLayout[id].top = `${Math.round(topPx)}px`;
+      customHudLayout[id].pctLeft = +(leftPx / window.innerWidth).toFixed(4);
+      customHudLayout[id].pctTop = +(topPx / window.innerHeight).toFixed(4);
+    });
     localStorage.setItem('bo_custom_hud', JSON.stringify(customHudLayout));
-    ui.toast('HUD LAYOUT SAVED // CONTROLS APPLIED', 1500);
-  } catch (e) {}
+    ui.toast('HUD LAYOUT SAVED // CONTROLS APPLIED', 1800);
+  } catch (e) {
+    console.error('Failed to save HUD layout', e);
+  }
   closeCustomHud();
+  applyCustomHudLayout();
   try { audio.uiClick(); } catch (e) {}
 }
 
@@ -1302,7 +1322,9 @@ function loadCustomHud() {
 }
 
 function applyCustomHudLayout() {
+  if (!customHudLayout || typeof customHudLayout !== 'object') return;
   for (const [id, cfg] of Object.entries(customHudLayout)) {
+    if (!cfg) continue;
     const el = document.querySelector(`[data-hud-id="${id}"]`);
     if (!el) continue;
     if (cfg.pctLeft !== undefined && cfg.pctTop !== undefined) {
@@ -1338,6 +1360,8 @@ if (scaleUpHudBtn) scaleUpHudBtn.addEventListener('click', () => scaleSelectedHu
 const scaleDownHudBtn = $('hud-scale-down');
 if (scaleDownHudBtn) scaleDownHudBtn.addEventListener('click', () => scaleSelectedHud(-0.1));
 
+let draggingHudEl = null;
+
 // Setup dragging for custom HUD elements
 document.querySelectorAll('[data-hud-id]').forEach((el) => {
   el.addEventListener('pointerdown', (e) => {
@@ -1345,41 +1369,42 @@ document.querySelectorAll('[data-hud-id]').forEach((el) => {
     e.preventDefault();
     e.stopPropagation();
     selectHudElement(el);
+    draggingHudEl = el;
     dragPointerId = e.pointerId;
     const rect = el.getBoundingClientRect();
     dragOffset.x = e.clientX - rect.left;
     dragOffset.y = e.clientY - rect.top;
-    if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
   });
-
-  el.addEventListener('pointermove', (e) => {
-    if (!isCustomHudMode || dragPointerId !== e.pointerId || selectedHudEl !== el) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const id = el.dataset.hudId;
-    const newLeft = clamp(e.clientX - dragOffset.x, 0, window.innerWidth - el.offsetWidth);
-    const newTop = clamp(e.clientY - dragOffset.y, 0, window.innerHeight - el.offsetHeight);
-    el.style.left = `${newLeft}px`;
-    el.style.top = `${newTop}px`;
-    el.style.bottom = 'auto';
-    el.style.right = 'auto';
-
-    if (!customHudLayout[id]) customHudLayout[id] = {};
-    customHudLayout[id].left = `${newLeft}px`;
-    customHudLayout[id].top = `${newTop}px`;
-    customHudLayout[id].pctLeft = +(newLeft / window.innerWidth).toFixed(4);
-    customHudLayout[id].pctTop = +(newTop / window.innerHeight).toFixed(4);
-  });
-
-  const endDrag = (e) => {
-    if (!isCustomHudMode) return;
-    if (dragPointerId === e.pointerId) {
-      dragPointerId = null;
-    }
-  };
-  el.addEventListener('pointerup', endDrag);
-  el.addEventListener('pointercancel', endDrag);
 });
+
+window.addEventListener('pointermove', (e) => {
+  if (!isCustomHudMode || !draggingHudEl || dragPointerId !== e.pointerId) return;
+  e.preventDefault();
+  const el = draggingHudEl;
+  const id = el.dataset.hudId;
+  const newLeft = clamp(e.clientX - dragOffset.x, 0, window.innerWidth - el.offsetWidth);
+  const newTop = clamp(e.clientY - dragOffset.y, 0, window.innerHeight - el.offsetHeight);
+  el.style.left = `${newLeft}px`;
+  el.style.top = `${newTop}px`;
+  el.style.bottom = 'auto';
+  el.style.right = 'auto';
+
+  if (!customHudLayout[id]) customHudLayout[id] = {};
+  customHudLayout[id].left = `${newLeft}px`;
+  customHudLayout[id].top = `${newTop}px`;
+  customHudLayout[id].pctLeft = +(newLeft / window.innerWidth).toFixed(4);
+  customHudLayout[id].pctTop = +(newTop / window.innerHeight).toFixed(4);
+}, { passive: false });
+
+const endCustomDrag = (e) => {
+  if (!isCustomHudMode) return;
+  if (dragPointerId === e.pointerId) {
+    dragPointerId = null;
+    draggingHudEl = null;
+  }
+};
+window.addEventListener('pointerup', endCustomDrag);
+window.addEventListener('pointercancel', endCustomDrag);
 
 if (touchEl) {
   const lookEl = $('touch-look');

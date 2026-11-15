@@ -993,21 +993,20 @@ html.touch #touch:not(.hidden){ display: block; }
 
 /* ===================== CUSTOM HUD EDIT MODE ===================== */
 #custom-hud-overlay{
-  position: absolute; inset: 0; z-index: 90;
-  pointer-events: auto; touch-action: none;
-  background: rgba(4,8,14,.55);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  position: absolute; inset: 0; z-index: 100;
+  pointer-events: none; touch-action: none;
+  background: rgba(4,8,14,.5);
 }
 #custom-hud-overlay.hidden{ display: none !important; }
 
 .hud-edit-bar{
-  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-  z-index: 95; display: flex; align-items: center; gap: 14px;
-  background: rgba(10,16,24,.94); border: 1.5px solid rgba(255,140,40,.55);
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  z-index: 110; display: flex; align-items: center; gap: 14px;
+  background: rgba(10,16,24,.96); border: 1.5px solid rgba(255,140,40,.6);
   padding: 8px 18px; border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0,0,0,.7), 0 0 20px rgba(255,122,26,.25);
+  box-shadow: 0 8px 32px rgba(0,0,0,.8), 0 0 24px rgba(255,122,26,.3);
   font-family: var(--mono);
+  pointer-events: auto !important;
 }
 .hud-edit-title{
   font-size: 11px; font-weight: 800; color: var(--orange);
@@ -1020,19 +1019,20 @@ html.touch #touch:not(.hidden){ display: block; }
 }
 .hud-edit-controls{ display: flex; align-items: center; gap: 8px; }
 .btn-edit-tool{
-  background: rgba(20,30,44,.85); border: 1px solid rgba(255,255,255,.2);
+  background: rgba(20,30,44,.9); border: 1px solid rgba(255,255,255,.25);
   color: #fff; font-family: var(--mono); font-size: 11px; font-weight: 700;
-  padding: 5px 12px; border-radius: 4px; cursor: pointer; transition: all .12s ease;
+  padding: 6px 14px; border-radius: 4px; cursor: pointer; transition: all .12s ease;
+  pointer-events: auto !important;
 }
-.btn-edit-tool:hover{ background: rgba(255,122,26,.2); border-color: var(--orange); }
+.btn-edit-tool:hover{ background: rgba(255,122,26,.25); border-color: var(--orange); }
 .btn-edit-tool.save{ background: var(--orange); color: #000; font-weight: 800; border-color: #ff9030; }
 .btn-edit-tool.save:hover{ background: #ffa040; }
-.btn-edit-tool.reset{ color: #ff7070; border-color: rgba(255,100,100,.3); }
+.btn-edit-tool.reset{ color: #ff7070; border-color: rgba(255,100,100,.35); }
 
 body.custom-hud-active #touch{
   display: block !important;
-  z-index: 92;
-  pointer-events: auto;
+  z-index: 95;
+  pointer-events: none;
 }
 body.custom-hud-active #touch-look{
   display: none !important;
@@ -1040,16 +1040,16 @@ body.custom-hud-active #touch-look{
 body.custom-hud-active .tbtn,
 body.custom-hud-active #touch-stick{
   cursor: grab;
-  outline: 1.5px dashed rgba(255,180,60,.55);
+  outline: 2px dashed rgba(255,180,60,.65);
   outline-offset: 3px;
   pointer-events: auto !important;
   transition: transform .05s ease, outline-color .1s ease;
 }
 body.custom-hud-active .tbtn.selected,
 body.custom-hud-active #touch-stick.selected{
-  outline: 2px solid #ffd24a !important;
+  outline: 2.5px solid #ffd24a !important;
   outline-offset: 4px;
-  box-shadow: 0 0 22px rgba(255,210,74,.6) !important;
+  box-shadow: 0 0 24px rgba(255,210,74,.75) !important;
 }
 
 #rotate-hint{ display: none; }

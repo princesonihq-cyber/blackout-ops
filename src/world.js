@@ -1305,11 +1305,43 @@ export class World {
 
     // Searchlight beams sweeping the sky.
     this.searchlights = [];
+    // A vertical gradient (bright at the lamp, gone at the top) plus a rim fade
+    // in the shader keeps the cone reading as light haze instead of a hard tube.
+    const beamTex = (() => {
+      const c = document.createElement('canvas');
+      c.width = 16; c.height = 128;
+      const bx = c.getContext('2d');
+      const g = bx.createLinearGradient(0, 128, 0, 0);
+      g.addColorStop(0.0, 'rgba(255,255,255,1)');
+      g.addColorStop(0.12, 'rgba(255,255,255,0.62)');
+      g.addColorStop(0.42, 'rgba(255,255,255,0.22)');
+      g.addColorStop(0.75, 'rgba(255,255,255,0.05)');
+      g.addColorStop(1.0, 'rgba(255,255,255,0)');
+      bx.fillStyle = g;
+      bx.fillRect(0, 0, 16, 128);
+      const t = new THREE.CanvasTexture(c);
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+      return t;
+    })();
     const beamMat = new THREE.MeshBasicMaterial({
-      color: 0xbfd6f2, transparent: true, opacity: 0.055,
+      map: beamTex, color: 0xbfd6f2, transparent: true, opacity: 0.15,
       blending: THREE.AdditiveBlending, depthWrite: false,
       side: THREE.DoubleSide, fog: false,
     });
+    // Fade the silhouette so the beam has no hard vertical edge.
+    beamMat.onBeforeCompile = (shader) => {
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vBeamN;\nvarying vec3 vBeamV;')
+        .replace('#include <project_vertex>', `#include <project_vertex>
+          vBeamN = normalize(normalMatrix * normal);
+          vBeamV = normalize(-mvPosition.xyz);`);
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vBeamN;\nvarying vec3 vBeamV;')
+        .replace('#include <dithering_fragment>', `#include <dithering_fragment>
+          float beamRim = abs(dot(normalize(vBeamN), normalize(vBeamV)));
+          gl_FragColor.a *= smoothstep(0.0, 0.72, beamRim);`);
+    };
     const beamGeo = new THREE.CylinderGeometry(4.6, 0.14, 36, this.tier === 'low' ? 8 : 14, 1, true);
     for (const [x, z, phase] of [[-37, -37, 0], [37, 35, 2.1]]) {
       const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 7.2, 8), this.materials.darkMetal);
