@@ -1088,17 +1088,45 @@ const stickKnob = stickEl ? stickEl.querySelector('.stick-knob') : null;
 const touchMove = { x: 0, y: 0 };
 let touchSprint = false;
 let touchCrouch = false;
+let touchProne = false;
 let touchJump = false;
 let stickPointer = null;
 let lookPointer = null;
 let lookX = 0;
 let lookY = 0;
-const STICK_RADIUS = 42;
+const STICK_RADIUS = 46;
+const stickOrigin = { x: 0, y: 0 };
+let isCustomHudMode = false;
+let selectedHudEl = null;
+let dragPointerId = null;
+const dragOffset = { x: 0, y: 0 };
+let customHudLayout = {};
 
 function resetTouchStick() {
   touchMove.x = 0;
   touchMove.y = 0;
   if (stickKnob) stickKnob.style.transform = 'translate(0px, 0px)';
+}
+
+function restoreStickHomePosition() {
+  if (!stickEl) return;
+  const cfg = customHudLayout.stick;
+  if (cfg) {
+    if (cfg.pctLeft !== undefined && cfg.pctTop !== undefined) {
+      stickEl.style.left = `${Math.round(cfg.pctLeft * window.innerWidth)}px`;
+      stickEl.style.top = `${Math.round(cfg.pctTop * window.innerHeight)}px`;
+    } else if (cfg.left && cfg.top) {
+      stickEl.style.left = cfg.left;
+      stickEl.style.top = cfg.top;
+    }
+    stickEl.style.bottom = 'auto';
+    stickEl.style.right = 'auto';
+  } else {
+    stickEl.style.left = '';
+    stickEl.style.top = '';
+    stickEl.style.bottom = '';
+    stickEl.style.right = '';
+  }
 }
 
 function clearTouchState() {
@@ -1109,6 +1137,10 @@ function clearTouchState() {
   touchJump = false;
   stickPointer = null;
   lookPointer = null;
+  if (stickEl) {
+    stickEl.classList.remove('active');
+    restoreStickHomePosition();
+  }
   const crouchBtn = touchEl && touchEl.querySelector('[data-act="crouch"]');
   if (crouchBtn) crouchBtn.classList.remove('on');
   const proneBtn = touchEl && touchEl.querySelector('[data-act="prone"]');
@@ -1120,6 +1152,7 @@ function clearTouchState() {
 function showTouch() {
   if (!IS_TOUCH || !touchEl) return;
   touchEl.classList.remove('hidden');
+  applyCustomHudLayout();
 }
 
 function hideTouch() {
@@ -1172,70 +1205,259 @@ function updateTouchHud() {
   }
 }
 
+/* ===================== Custom HUD Layout Management ===================== */
+
+function selectHudElement(el) {
+  if (selectedHudEl) selectedHudEl.classList.remove('selected');
+  selectedHudEl = el;
+  if (!el) {
+    const info = $('hud-edit-info');
+    if (info) info.textContent = 'TOUCH A BUTTON TO SELECT';
+    const scaleVal = $('hud-scale-val');
+    if (scaleVal) scaleVal.textContent = '100%';
+    return;
+  }
+  el.classList.add('selected');
+  const id = el.dataset.hudId || 'BUTTON';
+  const scale = customHudLayout[id]?.scale || 1;
+  const info = $('hud-edit-info');
+  if (info) info.textContent = `SELECTED: ${id.toUpperCase()}`;
+  const scaleVal = $('hud-scale-val');
+  if (scaleVal) scaleVal.textContent = `${Math.round(scale * 100)}%`;
+  try { audio.uiClick(); } catch (e) {}
+}
+
+function scaleSelectedHud(delta) {
+  if (!selectedHudEl) return;
+  const id = selectedHudEl.dataset.hudId;
+  if (!id) return;
+  if (!customHudLayout[id]) customHudLayout[id] = {};
+  let currentScale = customHudLayout[id].scale || 1;
+  currentScale = clamp(+(currentScale + delta).toFixed(2), 0.6, 1.8);
+  customHudLayout[id].scale = currentScale;
+  selectedHudEl.style.transform = `scale(${currentScale})`;
+  const scaleVal = $('hud-scale-val');
+  if (scaleVal) scaleVal.textContent = `${Math.round(currentScale * 100)}%`;
+  try { audio.uiClick(); } catch (e) {}
+}
+
+function openCustomHud() {
+  isCustomHudMode = true;
+  document.body.classList.add('custom-hud-active');
+  const overlay = $('custom-hud-overlay');
+  if (overlay) overlay.classList.remove('hidden');
+  if (touchEl) touchEl.classList.remove('hidden');
+  applyCustomHudLayout();
+  const defaultSelect = document.querySelector('[data-hud-id="fire"]') || document.querySelector('[data-hud-id="stick"]');
+  selectHudElement(defaultSelect);
+  ui.toast('CUSTOM HUD // DRAG BUTTONS TO REPOSITION');
+}
+
+function closeCustomHud() {
+  isCustomHudMode = false;
+  document.body.classList.remove('custom-hud-active');
+  const overlay = $('custom-hud-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  if (game.mode !== 'playing') {
+    if (touchEl && !IS_TOUCH) touchEl.classList.add('hidden');
+  }
+  if (selectedHudEl) selectedHudEl.classList.remove('selected');
+  selectedHudEl = null;
+  dragPointerId = null;
+}
+
+function saveCustomHud() {
+  try {
+    localStorage.setItem('bo_custom_hud', JSON.stringify(customHudLayout));
+    ui.toast('HUD LAYOUT SAVED // CONTROLS APPLIED', 1500);
+  } catch (e) {}
+  closeCustomHud();
+  try { audio.uiClick(); } catch (e) {}
+}
+
+function resetCustomHud() {
+  try {
+    localStorage.removeItem('bo_custom_hud');
+    ui.toast('HUD LAYOUT RESET TO DEFAULT', 1500);
+  } catch (e) {}
+  customHudLayout = {};
+  document.querySelectorAll('[data-hud-id]').forEach((el) => {
+    el.style.left = '';
+    el.style.top = '';
+    el.style.bottom = '';
+    el.style.right = '';
+    el.style.transform = '';
+  });
+  if (selectedHudEl) selectHudElement(selectedHudEl);
+  try { audio.uiClick(); } catch (e) {}
+}
+
+function loadCustomHud() {
+  try {
+    const saved = localStorage.getItem('bo_custom_hud');
+    if (saved) {
+      customHudLayout = JSON.parse(saved);
+      applyCustomHudLayout();
+    }
+  } catch (e) {}
+}
+
+function applyCustomHudLayout() {
+  for (const [id, cfg] of Object.entries(customHudLayout)) {
+    const el = document.querySelector(`[data-hud-id="${id}"]`);
+    if (!el) continue;
+    if (cfg.pctLeft !== undefined && cfg.pctTop !== undefined) {
+      el.style.left = `${Math.round(cfg.pctLeft * window.innerWidth)}px`;
+      el.style.top = `${Math.round(cfg.pctTop * window.innerHeight)}px`;
+      el.style.bottom = 'auto';
+      el.style.right = 'auto';
+    } else if (cfg.left && cfg.top) {
+      el.style.left = cfg.left;
+      el.style.top = cfg.top;
+      el.style.bottom = 'auto';
+      el.style.right = 'auto';
+    }
+    if (cfg.scale) {
+      el.style.transform = `scale(${cfg.scale})`;
+    }
+  }
+}
+
+loadCustomHud();
+
+const menuHudBtn = $('menu-custom-hud');
+if (menuHudBtn) menuHudBtn.addEventListener('click', openCustomHud);
+const pauseHudBtn = $('pause-custom-hud');
+if (pauseHudBtn) pauseHudBtn.addEventListener('click', openCustomHud);
+
+const saveHudBtn = $('hud-save');
+if (saveHudBtn) saveHudBtn.addEventListener('click', saveCustomHud);
+const resetHudBtn = $('hud-reset');
+if (resetHudBtn) resetHudBtn.addEventListener('click', resetCustomHud);
+const scaleUpHudBtn = $('hud-scale-up');
+if (scaleUpHudBtn) scaleUpHudBtn.addEventListener('click', () => scaleSelectedHud(0.1));
+const scaleDownHudBtn = $('hud-scale-down');
+if (scaleDownHudBtn) scaleDownHudBtn.addEventListener('click', () => scaleSelectedHud(-0.1));
+
+// Setup dragging for custom HUD elements
+document.querySelectorAll('[data-hud-id]').forEach((el) => {
+  el.addEventListener('pointerdown', (e) => {
+    if (!isCustomHudMode) return;
+    e.preventDefault();
+    e.stopPropagation();
+    selectHudElement(el);
+    dragPointerId = e.pointerId;
+    const rect = el.getBoundingClientRect();
+    dragOffset.x = e.clientX - rect.left;
+    dragOffset.y = e.clientY - rect.top;
+    if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
+  });
+
+  el.addEventListener('pointermove', (e) => {
+    if (!isCustomHudMode || dragPointerId !== e.pointerId || selectedHudEl !== el) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = el.dataset.hudId;
+    const newLeft = clamp(e.clientX - dragOffset.x, 0, window.innerWidth - el.offsetWidth);
+    const newTop = clamp(e.clientY - dragOffset.y, 0, window.innerHeight - el.offsetHeight);
+    el.style.left = `${newLeft}px`;
+    el.style.top = `${newTop}px`;
+    el.style.bottom = 'auto';
+    el.style.right = 'auto';
+
+    if (!customHudLayout[id]) customHudLayout[id] = {};
+    customHudLayout[id].left = `${newLeft}px`;
+    customHudLayout[id].top = `${newTop}px`;
+    customHudLayout[id].pctLeft = +(newLeft / window.innerWidth).toFixed(4);
+    customHudLayout[id].pctTop = +(newTop / window.innerHeight).toFixed(4);
+  });
+
+  const endDrag = (e) => {
+    if (!isCustomHudMode) return;
+    if (dragPointerId === e.pointerId) {
+      dragPointerId = null;
+    }
+  };
+  el.addEventListener('pointerup', endDrag);
+  el.addEventListener('pointercancel', endDrag);
+});
+
 if (touchEl) {
   const lookEl = $('touch-look');
   if (lookEl) {
     lookEl.addEventListener('pointerdown', (e) => {
+      if (isCustomHudMode) return;
       if (game.mode !== 'playing') return;
-      lookPointer = e.pointerId;
-      lookX = e.clientX;
-      lookY = e.clientY;
-      if (lookEl.setPointerCapture) lookEl.setPointerCapture(e.pointerId);
       e.preventDefault();
-    });
-    lookEl.addEventListener('pointermove', (e) => {
-      if (e.pointerId !== lookPointer) return;
-      const dx = clamp(e.clientX - lookX, -90, 90);
-      const dy = clamp(e.clientY - lookY, -90, 90);
-      lookX = e.clientX;
-      lookY = e.clientY;
-      const ads = weapons.aimBlend > 0.4 ? 0.62 : 1;
-      player.look(dx * 1.35, dy * 1.35, ads);
-      weapons.addLook(dx, dy);
-      e.preventDefault();
-    });
-    const endLook = (e) => {
-      if (e.pointerId === lookPointer) lookPointer = null;
-    };
-    lookEl.addEventListener('pointerup', endLook);
-    lookEl.addEventListener('pointercancel', endLook);
-  }
 
-  if (stickEl) {
-    const updateStick = (e) => {
-      const r = stickEl.getBoundingClientRect();
-      const cx = r.left + r.width / 2;
-      const cy = r.top + r.height / 2;
-      let dx = e.clientX - cx;
-      let dy = e.clientY - cy;
-      const len = Math.hypot(dx, dy);
-      if (len > STICK_RADIUS) {
-        dx = (dx / len) * STICK_RADIUS;
-        dy = (dy / len) * STICK_RADIUS;
+      // Free Fire / COD Mobile Dynamic Joystick Zone (Left half of screen)
+      if (e.clientX < window.innerWidth * 0.48) {
+        if (stickPointer === null) {
+          stickPointer = e.pointerId;
+          stickOrigin.x = e.clientX;
+          stickOrigin.y = e.clientY;
+          if (stickEl) {
+            stickEl.style.left = `${e.clientX - stickEl.offsetWidth / 2}px`;
+            stickEl.style.top = `${e.clientY - stickEl.offsetHeight / 2}px`;
+            stickEl.style.bottom = 'auto';
+            stickEl.style.right = 'auto';
+            stickEl.classList.add('active');
+          }
+          resetTouchStick();
+          if (lookEl.setPointerCapture) lookEl.setPointerCapture(e.pointerId);
+        }
+      } else {
+        // Camera Look Zone (Right half of screen)
+        if (lookPointer === null) {
+          lookPointer = e.pointerId;
+          lookX = e.clientX;
+          lookY = e.clientY;
+          if (lookEl.setPointerCapture) lookEl.setPointerCapture(e.pointerId);
+        }
       }
-      touchMove.x = dx / STICK_RADIUS;
-      touchMove.y = dy / STICK_RADIUS;
-      if (stickKnob) stickKnob.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
-    };
-    stickEl.addEventListener('pointerdown', (e) => {
-      if (game.mode !== 'playing') return;
-      stickPointer = e.pointerId;
-      if (stickEl.setPointerCapture) stickEl.setPointerCapture(e.pointerId);
-      updateStick(e);
-      e.preventDefault();
     });
-    stickEl.addEventListener('pointermove', (e) => {
-      if (e.pointerId !== stickPointer) return;
-      updateStick(e);
-      e.preventDefault();
+
+    lookEl.addEventListener('pointermove', (e) => {
+      if (isCustomHudMode) return;
+      if (e.pointerId === stickPointer) {
+        let dx = e.clientX - stickOrigin.x;
+        let dy = e.clientY - stickOrigin.y;
+        const len = Math.hypot(dx, dy);
+        if (len > STICK_RADIUS) {
+          dx = (dx / len) * STICK_RADIUS;
+          dy = (dy / len) * STICK_RADIUS;
+        }
+        touchMove.x = dx / STICK_RADIUS;
+        touchMove.y = dy / STICK_RADIUS;
+        if (stickKnob) stickKnob.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
+        e.preventDefault();
+      } else if (e.pointerId === lookPointer) {
+        const dx = clamp(e.clientX - lookX, -90, 90);
+        const dy = clamp(e.clientY - lookY, -90, 90);
+        lookX = e.clientX;
+        lookY = e.clientY;
+        const ads = weapons.aimBlend > 0.4 ? 0.62 : 1;
+        player.look(dx * 1.35, dy * 1.35, ads);
+        weapons.addLook(dx, dy);
+        e.preventDefault();
+      }
     });
-    const endStick = (e) => {
-      if (e.pointerId !== stickPointer) return;
-      stickPointer = null;
-      resetTouchStick();
+
+    const endPointer = (e) => {
+      if (e.pointerId === stickPointer) {
+        stickPointer = null;
+        resetTouchStick();
+        if (stickEl) {
+          stickEl.classList.remove('active');
+          restoreStickHomePosition();
+        }
+      }
+      if (e.pointerId === lookPointer) {
+        lookPointer = null;
+      }
     };
-    stickEl.addEventListener('pointerup', endStick);
-    stickEl.addEventListener('pointercancel', endStick);
+    lookEl.addEventListener('pointerup', endPointer);
+    lookEl.addEventListener('pointercancel', endPointer);
   }
 
   const act = (name) => touchEl.querySelector(`[data-act="${name}"]`);
@@ -1244,14 +1466,17 @@ if (touchEl) {
     const el = act(name);
     if (!el) return;
     el.addEventListener('pointerdown', (e) => {
+      if (isCustomHudMode) return;
       if (game.mode !== 'playing') return;
       e.preventDefault();
+      e.stopPropagation();
       if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
       down();
       el.classList.add('on');
     });
     const release = (e) => {
-      if (e) e.preventDefault();
+      if (isCustomHudMode) return;
+      if (e) { e.preventDefault(); e.stopPropagation(); }
       up();
       el.classList.remove('on');
     };
@@ -1264,12 +1489,17 @@ if (touchEl) {
     const el = act(name);
     if (!el) return;
     el.addEventListener('pointerdown', (e) => {
+      if (isCustomHudMode) return;
       if (game.mode !== 'playing') return;
       e.preventDefault();
+      e.stopPropagation();
       el.classList.add('on');
       fn();
     });
-    const off = () => el.classList.remove('on');
+    const off = (e) => {
+      if (e) e.stopPropagation();
+      el.classList.remove('on');
+    };
     el.addEventListener('pointerup', off);
     el.addEventListener('pointercancel', off);
     el.addEventListener('lostpointercapture', off);
@@ -1298,8 +1528,10 @@ if (touchEl) {
   const crouchBtn = act('crouch');
   if (crouchBtn) {
     crouchBtn.addEventListener('pointerdown', (e) => {
+      if (isCustomHudMode) return;
       if (game.mode !== 'playing') return;
       e.preventDefault();
+      e.stopPropagation();
       if (touchProne) {
         touchProne = false;
         const pEl = act('prone'); if (pEl) pEl.classList.remove('on');
@@ -1315,8 +1547,10 @@ if (touchEl) {
   const proneBtn = act('prone');
   if (proneBtn) {
     proneBtn.addEventListener('pointerdown', (e) => {
+      if (isCustomHudMode) return;
       if (game.mode !== 'playing') return;
       e.preventDefault();
+      e.stopPropagation();
       if (player.sprinting && player.grounded) {
         if (player.startDive()) audio.slide();
         touchProne = true;
@@ -1451,6 +1685,7 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(quality.ratio);
+  applyCustomHudLayout();
 });
 
 /* ============================================================

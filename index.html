@@ -184,6 +184,11 @@
             <span class="btn-label" id="gfx-val">ULTRA REALISTIC</span>
           </button>
 
+          <button id="menu-custom-hud" class="btn-ghost" title="Customize on-screen touch controls layout">
+            <span class="btn-kicker">TOUCH LAYOUT</span>
+            <span class="btn-label">CUSTOM HUD</span>
+          </button>
+
           <div class="sens">
             <label for="sens">LOOK SENSITIVITY <span id="sens-val">1.0</span></label>
             <input type="range" id="sens" min="0.3" max="2.2" step="0.05" value="1" />
@@ -334,6 +339,7 @@
       <h2>PAUSED</h2>
       <p class="muted">The sector is holding. For now.</p>
       <button id="resume" class="btn-primary small"><span class="btn-label">RESUME</span></button>
+      <button id="pause-custom-hud" class="btn-ghost">CUSTOMIZE HUD // CONTROLS</button>
       <button id="pause-gfx-toggle" class="btn-ghost">GRAPHICS // <span id="pause-gfx-val">ULTRA REALISTIC</span></button>
       <button id="pause-restart" class="btn-ghost">RESTART OPERATION</button>
       <div class="modal-hint">Press <kbd>ESC</kbd> to resume · <kbd>Q</kbd> to quit to menu</div>
@@ -363,28 +369,160 @@
   <div id="touch" class="hidden">
     <div id="touch-look"></div>
 
-    <div id="touch-stick" aria-label="Movement joystick">
+    <div id="touch-stick" data-hud-id="stick" aria-label="Movement joystick">
       <div class="stick-base"><div class="stick-knob"></div></div>
       <span class="stick-label">MOVE</span>
     </div>
 
-    <button class="tbtn t-pause" data-act="pause" aria-label="Pause">II</button>
-    <button class="tbtn t-streak t-uav" data-act="uav" aria-label="UAV">UAV<b>0</b></button>
-    <button class="tbtn t-streak t-strike" data-act="strike" aria-label="Airstrike">AIR<b>0</b></button>
+    <!-- Pause Button -->
+    <button class="tbtn t-pause" data-act="pause" data-hud-id="pause" aria-label="Pause">
+      <svg class="t-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+        <line x1="8" y1="5" x2="8" y2="19" stroke-linecap="round"/>
+        <line x1="16" y1="5" x2="16" y2="19" stroke-linecap="round"/>
+      </svg>
+    </button>
 
-    <button class="tbtn t-sprint" data-act="sprint">SPRINT</button>
-    <button class="tbtn t-crouch" data-act="crouch">CROUCH</button>
-    <button class="tbtn t-prone" data-act="prone">PRONE</button>
-    <button class="tbtn t-jump" data-act="jump">JUMP</button>
-    <button class="tbtn t-reload" data-act="reload">RELOAD</button>
-    <button class="tbtn t-swap" data-act="swap">SWAP</button>
-    <button class="tbtn t-light" data-act="light" aria-label="Flashlight">LIGHT</button>
-    <button class="tbtn t-grenade" data-act="grenade">FRAG<b>2</b></button>
-    <button class="tbtn t-knife" data-act="knife">KNIFE</button>
-    <button class="tbtn t-ads" data-act="ads">AIM</button>
-    <button class="tbtn t-fire" data-act="fire">FIRE</button>
+    <!-- Killstreaks -->
+    <button class="tbtn t-streak t-uav" data-act="uav" data-hud-id="uav" aria-label="UAV Recon">
+      <svg class="t-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3.5" fill="currentColor" fill-opacity="0.3"/>
+        <path d="M12 2v4m0 12v4M2 12h4m12 0h4" stroke-linecap="round"/>
+        <path d="M6 6l2.5 2.5m7 7l2.5 2.5M18 6l-2.5 2.5m-7 7l-2.5 2.5" stroke-linecap="round"/>
+      </svg>
+      <span class="t-lbl">UAV</span>
+      <b class="t-badge">0</b>
+    </button>
+
+    <button class="tbtn t-streak t-strike" data-act="strike" data-hud-id="strike" aria-label="Airstrike">
+      <svg class="t-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2l3 7 7 2-6 3 1 7-5-3-5 3 1-7-6-3 7-2z" fill="currentColor" fill-opacity="0.3"/>
+      </svg>
+      <span class="t-lbl">AIR</span>
+      <b class="t-badge">0</b>
+    </button>
+
+    <!-- Tactical Movement & Stances -->
+    <button class="tbtn t-sprint" data-act="sprint" data-hud-id="sprint" aria-label="Sprint">
+      <svg class="t-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="15" cy="5" r="2.5" fill="currentColor"/>
+        <path d="M11 9l4 2-2 4 4 5m-5-9l-3 3-4-1" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="t-lbl">SPRINT</span>
+    </button>
+
+    <button class="tbtn t-crouch" data-act="crouch" data-hud-id="crouch" aria-label="Crouch or Slide">
+      <svg class="t-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="5" r="2.5" fill="currentColor"/>
+        <path d="M7 11h10l-3 4 4 5h-4l-3-4-2 4H5l3-6z" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="t-lbl">CROUCH</span>
+    </button>
+
+    <button class="tbtn t-prone" data-act="prone" data-hud-id="prone" aria-label="Prone or Dive">
+      <svg class="t-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="5" cy="11" r="2" fill="currentColor"/>
+        <path d="M8 12h12l-2 4H9z" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="2" y1="18" x2="22" y2="18" stroke-dasharray="2 2"/>
+      </svg>
+      <span class="t-lbl">PRONE</span>
+    </button>
+
+    <button class="tbtn t-jump" data-act="jump" data-hud-id="jump" aria-label="Jump or Stand">
+      <svg class="t-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 3v10m-4-6l4-4 4 4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5 17c2-1 4-1 7 1 3 2 5 2 7 0" stroke-linecap="round"/>
+        <path d="M5 21c2-1 4-1 7 1 3 2 5 2 7 0" stroke-linecap="round" stroke-opacity="0.5"/>
+      </svg>
+      <span class="t-lbl">JUMP</span>
+    </button>
+
+    <!-- Weapons & Combat Actions -->
+    <button class="tbtn t-reload" data-act="reload" data-hud-id="reload" aria-label="Reload Weapon">
+      <svg class="t-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+        <path d="M3 3v5h5"/>
+        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+        <path d="M21 21v-5h-5"/>
+        <rect x="10.5" y="8" width="3" height="8" rx="1.5" fill="currentColor"/>
+      </svg>
+      <span class="t-lbl">RELOAD</span>
+    </button>
+
+    <button class="tbtn t-swap" data-act="swap" data-hud-id="swap" aria-label="Swap Weapon">
+      <svg class="t-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 8h13l-3-3m0 0l3 3-3 3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M20 16H7l3 3m0 0l-3-3 3-3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="t-lbl">SWAP</span>
+    </button>
+
+    <button class="tbtn t-light" data-act="light" data-hud-id="light" aria-label="Tactical Flashlight">
+      <svg class="t-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 8h5l4-3v14l-4-3H4z" fill="currentColor" fill-opacity="0.3"/>
+        <path d="M17 8l4-2m-4 6h5m-5 6l4 2" stroke-linecap="round"/>
+      </svg>
+      <span class="t-lbl">LIGHT</span>
+    </button>
+
+    <button class="tbtn t-grenade" data-act="grenade" data-hud-id="grenade" aria-label="Frag Grenade">
+      <svg class="t-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <ellipse cx="12" cy="14" rx="6" ry="7"/>
+        <rect x="10" y="4" width="4" height="3" fill="currentColor"/>
+        <path d="M8 4c0-2 2-2 3-2"/>
+        <line x1="12" y1="7" x2="12" y2="21"/>
+        <line x1="6" y1="14" x2="18" y2="14"/>
+      </svg>
+      <span class="t-lbl">FRAG</span>
+      <b class="t-badge">2</b>
+    </button>
+
+    <button class="tbtn t-knife" data-act="knife" data-hud-id="knife" aria-label="Knife Melee">
+      <svg class="t-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 4l1 1-10 10-3-1-3 3 1 1-2 2 1 1 2-2 1 1 3-3-1-3L19 4z" fill="currentColor" fill-opacity="0.3"/>
+        <line x1="14" y1="9" x2="16" y2="11"/>
+      </svg>
+      <span class="t-lbl">KNIFE</span>
+    </button>
+
+    <button class="tbtn t-ads" data-act="ads" data-hud-id="ads" aria-label="Aim Down Sight">
+      <svg class="t-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="9"/>
+        <line x1="12" y1="3" x2="12" y2="21"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <circle cx="12" cy="12" r="2" fill="currentColor"/>
+        <path d="M7 7 L9 9 M17 7 L15 9 M7 17 L9 15 M17 17 L15 15"/>
+      </svg>
+      <span class="t-lbl">AIM</span>
+    </button>
+
+    <button class="tbtn t-fire" data-act="fire" data-hud-id="fire" aria-label="Fire Weapon">
+      <svg class="t-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="9" stroke-opacity="0.6"/>
+        <circle cx="12" cy="12" r="3.5" fill="currentColor"/>
+        <line x1="12" y1="1" x2="12" y2="5"/>
+        <line x1="12" y1="19" x2="12" y2="23"/>
+        <line x1="1" y1="12" x2="5" y2="12"/>
+        <line x1="19" y1="12" x2="23" y2="12"/>
+      </svg>
+      <span class="t-lbl">FIRE</span>
+    </button>
 
     <div id="rotate-hint">BEST IN LANDSCAPE<span>ROTATE YOUR DEVICE</span></div>
+  </div>
+
+  <!-- Custom HUD Overlay -->
+  <div id="custom-hud-overlay" class="hidden">
+    <div class="hud-edit-bar">
+      <div class="hud-edit-title"><span class="blink"></span> HUD EDITOR</div>
+      <div class="hud-edit-info" id="hud-edit-info">TOUCH &amp; DRAG BUTTONS</div>
+      <div class="hud-edit-controls">
+        <button id="hud-scale-down" class="btn-edit-tool" title="Scale Down Button">&minus;</button>
+        <span id="hud-scale-val">100%</span>
+        <button id="hud-scale-up" class="btn-edit-tool" title="Scale Up Button">&plus;</button>
+        <button id="hud-reset" class="btn-edit-tool reset">RESET</button>
+        <button id="hud-save" class="btn-edit-tool save">SAVE &amp; EXIT</button>
+      </div>
+    </div>
   </div>
 
   <div id="boot-error" class="hidden"></div>
