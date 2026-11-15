@@ -94,19 +94,14 @@ function makeRoughnessTexture(size = 512, repeatX = 3, repeatY = 3) {
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#e2e2e2';
   ctx.fillRect(0, 0, size, size);
-  for (let i = 0; i < 35; i++) {
-    const x = rand(0, size), y = rand(0, size), r = rand(size * 0.05, size * 0.28);
+  for (let i = 0; i < 24; i++) {
+    const x = rand(0, size), y = rand(0, size), r = rand(size * 0.08, size * 0.3);
     const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, 'rgba(40,40,40,0.88)');
-    g.addColorStop(0.5, 'rgba(85,85,85,0.4)');
+    g.addColorStop(0, 'rgba(120,120,120,0.65)');
+    g.addColorStop(0.5, 'rgba(165,165,165,0.3)');
     g.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = g;
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
-  }
-  for (let i = 0; i < 6000; i++) {
-    const v = rand(100, 255);
-    ctx.fillStyle = `rgba(${v},${v},${v},0.28)`;
-    ctx.fillRect(rand(0, size), rand(0, size), 2, 2);
   }
   const tex = new THREE.CanvasTexture(canvas);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
@@ -455,16 +450,16 @@ export class World {
 
     this.materials = {
       ground: new THREE.MeshStandardMaterial({
-        map: groundTex, color: 0xc4cdd8, roughness: 0.82, metalness: 0.12,
+        map: groundTex, color: 0x9fa9b5, roughness: 1.0, metalness: 0.1,
         roughnessMap: makeRoughnessTexture(512, 3, 3),
-        normalMap: normalFor(18, 18, 3.2), normalScale: new THREE.Vector2(0.55, 0.55),
+        normalMap: normalFor(18, 18, 3.2), normalScale: new THREE.Vector2(0.5, 0.5),
       }),
       concrete: new THREE.MeshStandardMaterial({
-        map: concreteTex, color: 0x9da4ad, roughness: 0.88, metalness: 0.08,
+        map: concreteTex, color: 0x7f8791, roughness: 0.9, metalness: 0.07,
         normalMap: normalFor(2, 2, 2.8), normalScale: new THREE.Vector2(0.5, 0.5),
       }),
       concreteDark: new THREE.MeshStandardMaterial({
-        map: concreteTex, color: 0x6e7682, roughness: 0.9, metalness: 0.08,
+        map: concreteTex, color: 0x5c636e, roughness: 0.92, metalness: 0.07,
         normalMap: normalFor(2, 2, 2.8), normalScale: new THREE.Vector2(0.5, 0.5),
       }),
       containerBlue: new THREE.MeshStandardMaterial({

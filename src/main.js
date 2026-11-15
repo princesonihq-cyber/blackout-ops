@@ -61,17 +61,17 @@ const DPR = window.devicePixelRatio || 1;
 const QUALITY_PRESETS = {
   balanced: {
     id: 'balanced', label: 'BALANCED (SMOOTH 60FPS)',
-    dpr: 1.0, min: 1.0, antialias: false, shadows: false,
+    dpr: 1.0, min: 1.0, antialias: true, shadows: false,
     shadowSize: 512, dust: 0, effectScale: 0.5,
   },
   high: {
     id: 'high', label: 'HIGH QUALITY',
-    dpr: Math.max(1.25, Math.min(1.75, DPR)), min: 1.0, antialias: true, shadows: true,
+    dpr: Math.min(1.75, Math.max(1, DPR)), min: Math.min(1, DPR), antialias: true, shadows: true,
     shadowSize: 2048, dust: 850, effectScale: 1.0,
   },
   ultra: {
     id: 'ultra', label: 'ULTRA REALISTIC',
-    dpr: Math.max(1.5, Math.min(2.0, DPR)), min: 1.25, antialias: true, shadows: true,
+    dpr: Math.min(2.0, Math.max(1, DPR)), min: Math.min(1.25, DPR), antialias: true, shadows: true,
     shadowSize: 2048, dust: 1200, effectScale: 1.0,
   },
 };
@@ -165,10 +165,11 @@ scene.fog = new THREE.Fog(0x0a121c, 32, 165);
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 500);
 scene.add(camera);
 
-// Tactical weapon flashlight attached to player camera
-const playerFlashlight = new THREE.SpotLight(0xdceeff, 28, 48, Math.PI / 5.2, 0.45, 1.8);
-playerFlashlight.position.set(0.18, -0.16, -0.12);
-playerFlashlight.target.position.set(0, -0.05, -12);
+// Tactical weapon flashlight attached to player camera. The origin sits ahead
+// of the viewmodel so the barrel is not lit from 20cm away (which blows it out).
+const playerFlashlight = new THREE.SpotLight(0xdceeff, 13, 48, Math.PI / 5.6, 0.55, 1.55);
+playerFlashlight.position.set(0.16, -0.14, -0.95);
+playerFlashlight.target.position.set(0, -0.05, -13);
 playerFlashlight.castShadow = true;
 playerFlashlight.shadow.mapSize.set(1024, 1024);
 playerFlashlight.shadow.bias = -0.0004;
@@ -178,7 +179,7 @@ camera.add(playerFlashlight);
 camera.add(playerFlashlight.target);
 
 // Subtle forward fill around the weapon muzzle
-const playerTorchFill = new THREE.PointLight(0xaecde8, 2.5, 7, 2);
+const playerTorchFill = new THREE.PointLight(0xaecde8, 0.8, 6, 2);
 playerTorchFill.position.set(0.18, -0.16, -0.12);
 camera.add(playerTorchFill);
 
@@ -196,6 +197,8 @@ const world = new World(scene, {
   tier: TIER, shadowSize: PRESET.shadowSize, dust: PRESET.dust,
   stripNormals: STRIP_NORMALS, anisotropy: MAX_ANISO,
 });
+// Dev hook: lets debugging tools inspect the live scene (?debug only).
+if (PARAMS.has('debug')) window.__blackout = { THREE, scene, camera, renderer, world };
 const effects = new Effects(scene, { tier: TIER, scale: PRESET.effectScale });
 const ui = new UI();
 const player = new Player(camera, world, audio);
@@ -294,7 +297,7 @@ function updateGfxUI() {
   if (pauseGfx) pauseGfx.textContent = p.label;
 }
 
-function setGraphicsTier(tierKey) {
+function setGraphicsTier(tierKey, silent = false) {
   if (!QUALITY_PRESETS[tierKey]) return;
   TIER = tierKey;
   try { localStorage.setItem('bo_tier', TIER); } catch (e) {}
@@ -319,7 +322,7 @@ function setGraphicsTier(tierKey) {
 
   document.documentElement.dataset.tier = TIER;
   updateGfxUI();
-  ui.toast('GRAPHICS // ' + p.label, 1400);
+  if (!silent) ui.toast('GRAPHICS // ' + p.label, 1400);
 }
 
 function cycleGraphicsTier() {
@@ -331,6 +334,7 @@ function cycleGraphicsTier() {
 
 // Crisp resolution adaptation: frame rate fine-tunes between 1.0 and preset max.
 // Never drops below 1.0 native resolution, preventing any pixelated or blurry upscaling.
+let slowWindows = 0;
 function adaptQuality(rawDt) {
   if (FIXED_RES) return;
   quality.timer += rawDt;
@@ -348,6 +352,18 @@ function adaptQuality(rawDt) {
   } else if (fps > 58 && quality.ratio < quality.max) {
     quality.ratio = Math.min(quality.max, quality.ratio + 0.05);
     renderer.setPixelRatio(quality.ratio);
+  }
+
+  // Hardware that still cannot hold a playable rate at native resolution drops
+  // shadows/effects rather than resolution, so the image stays sharp.
+  if (fps < 26 && quality.ratio <= quality.min + 0.001) {
+    slowWindows++;
+    if (slowWindows >= 2 && TIER !== 'balanced') {
+      slowWindows = 0;
+      setGraphicsTier('balanced', true);
+    }
+  } else if (fps > 42) {
+    slowWindows = 0;
   }
 }
 
@@ -1494,7 +1510,9 @@ if (touchEl) {
       if (game.mode !== 'playing') return;
       e.preventDefault();
       e.stopPropagation();
-      if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
+      // setPointerCapture throws if the pointer is already gone (fast taps,
+      // synthetic events); capture is an optimisation, not a requirement.
+      try { if (el.setPointerCapture) el.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
       down();
       el.classList.add('on');
     });

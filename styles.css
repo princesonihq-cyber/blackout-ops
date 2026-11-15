@@ -1180,6 +1180,30 @@ html.touch .scoreboard{
   .menu-copy .blurb{ display: none; }
 }
 
+/* Short landscape phones: the hero would push DEPLOY below the fold, so the
+   menu compacts until the deploy button is reachable without scrolling. */
+@media (orientation: landscape) and (max-height: 430px) and (pointer: coarse){
+  #menu{ padding: 8px 5vw; }
+  #menu .eyebrow,
+  #menu .hero-chips{ display: none; }
+  #menu h1{ font-size: 38px; line-height: .88; }
+  #menu .subhead{ margin: 4px 0 6px; font-size: 9px; letter-spacing: .14em; }
+  #menu .blurb{
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; font-size: 11px; line-height: 1.4; margin: 0 0 10px;
+  }
+  #menu .menu-actions{ margin-top: 0; gap: 10px; }
+  #menu #deploy{ padding: 9px 20px; }
+  #menu .btn-primary .btn-label{ font-size: 20px; }
+  #menu .btn-ghost{ padding: 7px 12px; }
+  #menu .btn-ghost .btn-label{ font-size: 10px; }
+  #menu .controls-card{ display: none; }
+}
+
+@media (orientation: landscape) and (max-height: 400px) and (pointer: coarse){
+  #menu .blurb{ display: none; }
+}
+
 @media (orientation: portrait) and (pointer: coarse){
   /* Portrait has vertical room but little width: spread the action cluster
      into two columns instead of one long row. */

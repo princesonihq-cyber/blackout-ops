@@ -299,7 +299,7 @@ export class WeaponSystem {
 
     // Soft fill light so the viewmodel reads in the dark yard. Kept low so the
     // materials keep their contrast instead of blowing out to pale grey.
-    this.viewLight = new THREE.PointLight(0xffe4c8, 3.6, 3.2, 2);
+    this.viewLight = new THREE.PointLight(0xffe4c8, 1.7, 3.2, 2);
     this.viewLight.position.set(0.3, 0.22, 0.3);
     this.camera.add(this.viewLight);
 

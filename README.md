@@ -115,7 +115,9 @@ vendor/three.module.js  Three.js r160, vendored for offline play
 
 ## Debug helpers
 
-Append `?debug` to the URL to enable the `blackout-debug` event harness and
-`window.__BLACKOUT__`. Add `&noptr` to skip pointer lock (useful for automation)
-and `&autostart` to skip the menu. Combine with `&q=low|medium|high` to pin the
-quality tier and `&touch` to force the touch HUD on a desktop browser.
+Append `?debug` to the URL to enable the `blackout-debug` event harness and the
+`window.__blackout` scene hook. Add `&noptr` to skip pointer lock (useful for
+automation) and `&autostart` to skip the menu. Combine with
+`&q=balanced|high|ultra` to pin the quality tier, `&touch` to force the touch HUD
+on a desktop browser, and `&fixed` to lock the render resolution (no adaptive
+scaling) when comparing screenshots.
