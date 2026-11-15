@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-15T00:00:00Z",
+  "title": "Design System: BLACKOUT OPS",
+  "extensions": {
+    "colorMeta": {
+      "midnight-black": { "role": "neutral", "displayName": "Midnight Black", "canonical": "#05070b" },
+      "panel-steel": { "role": "neutral", "displayName": "Panel Steel", "canonical": "rgba(8, 12, 18, .72)" },
+      "panel-solid": { "role": "neutral", "displayName": "Panel Solid", "canonical": "rgba(7, 10, 15, .92)" },
+      "dossier-ink": { "role": "neutral", "displayName": "Dossier Ink", "canonical": "#e8eef5" },
+      "field-dim": { "role": "neutral", "displayName": "Field Dim", "canonical": "#8b97a5" },
+      "muzzle-flash-orange": { "role": "primary", "displayName": "Muzzle Flash Orange", "canonical": "#ff7a1a" },
+      "ember-hot": { "role": "primary", "displayName": "Ember Hot", "canonical": "#ffa350" },
+      "signal-amber": { "role": "secondary", "displayName": "Signal Amber", "canonical": "#ffc46b" },
+      "alert-red": { "role": "tertiary", "displayName": "Alert Red", "canonical": "#ff3b30" },
+      "go-green": { "role": "tertiary", "displayName": "Go Green", "canonical": "#58e08a" },
+      "threat-line": { "role": "neutral", "displayName": "Threat Line", "canonical": "rgba(255, 122, 26, .32)" },
+      "soft-line": { "role": "neutral", "displayName": "Soft Line", "canonical": "rgba(180, 200, 220, .14)" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero title only — the BLACKOUT / OPS stack." },
+      "headline": { "displayName": "Headline", "purpose": "Modal h2s (PAUSED, K.I.A.)." },
+      "title": { "displayName": "Title", "purpose": "Button labels and command actions." },
+      "hud-value": { "displayName": "HUD Value", "purpose": "Ammo, health, scoreboard numerals." },
+      "body": { "displayName": "Body", "purpose": "Briefing blurbs and modal copy." },
+      "label": { "displayName": "Label", "purpose": "Stencil micro-labels; 9.5-10px confirmed floor." }
+    },
+    "shadows": [
+      { "name": "hud-glass", "value": "0 4px 18px rgba(0,0,0,.4), inset 0 0 16px rgba(120,170,220,.06)", "purpose": "Resting HUD panels." },
+      { "name": "card-lift", "value": "0 12px 40px rgba(0,0,0,.55)", "purpose": "Minimap shell, menu cards." },
+      { "name": "modal-deep", "value": "0 8px 32px rgba(0,0,0,.8)", "purpose": "Pause / game-over modals." },
+      { "name": "command-hover", "value": "0 10px 30px rgba(255,100,20,.28)", "purpose": "Primary button hover lift (offset, tinted)." },
+      { "name": "state-glow", "value": "0 0 12px <state color>", "purpose": "Functional state feedback only — never decorative." }
+    ],
+    "motion": [
+      { "name": "tap", "value": "all .12s ease", "purpose": "Small control feedback (chips, tabs, edit tools)." },
+      { "name": "lift", "value": "all .16s ease", "purpose": "Button hover/active lifts and transforms." },
+      { "name": "pop", "value": "cubic-bezier(.2,.8,.2,1) both", "purpose": "Entry pop for banners and medals." },
+      { "name": "pulse", "value": "1.6s ease-in-out infinite", "purpose": "State-only pulses (low health); decorative pulses banned." }
+    ],
+    "breakpoints": [
+      { "name": "xs", "value": "420px" },
+      { "name": "sm", "value": "760px" },
+      { "name": "md", "value": "900px" },
+      { "name": "lg", "value": "1080px" },
+      { "name": "coarse", "value": "pointer: coarse" },
+      { "name": "short-landscape", "value": "orientation: landscape and max-height: 430px and pointer: coarse" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Command action (DEPLOY / RESUME) — orange gradient with a top-right stencil notch.",
+      "html": "<button class=\"ds-btn-primary\"><span class=\"ds-kicker\">COMMENCE OPERATION</span><span class=\"ds-label\">DEPLOY &raquo;</span></button>",
+      "css": ".ds-btn-primary { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; background: linear-gradient(135deg, var(--orange-hot, #ffa350), var(--orange, #ff7a1a)); color: #0a0c10; border: none; padding: 14px 30px 13px 22px; cursor: pointer; clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%); box-shadow: 0 10px 30px rgba(255,100,20,.28); transition: all .16s ease; font-family: Bahnschrift, 'DIN Alternate', 'Arial Narrow', 'Segoe UI', sans-serif; } .ds-btn-primary .ds-kicker { font-size: 9px; letter-spacing: .28em; font-weight: 700; opacity: .78; } .ds-btn-primary .ds-label { font-size: 25px; font-weight: 800; letter-spacing: .14em; line-height: 1; } .ds-btn-primary:hover { background: linear-gradient(135deg, #ffb061, var(--orange, #ff7a1a)); box-shadow: 0 10px 42px rgba(255,122,26,.55); transform: translateY(-2px); } .ds-btn-primary:active { transform: translateY(1px) scale(.99); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary modal/menu action — quiet, bordered, sharp.",
+      "html": "<button class=\"ds-btn-ghost\">RESTART OPERATION</button>",
+      "css": ".ds-btn-ghost { background: transparent; color: var(--dim, #8b97a5); border: 1px solid rgba(255,255,255,.14); padding: 9px 26px; cursor: pointer; font-family: var(--ui, Bahnschrift, sans-serif); font-size: 10px; letter-spacing: .22em; font-weight: 700; transition: all .15s ease; } .ds-btn-ghost:hover { color: #fff; border-color: rgba(255,255,255,.35); background: rgba(255,255,255,.05); }"
+    },
+    {
+      "name": "Stencil Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Capability tag and classification badge variants.",
+      "html": "<div style=\"display:flex;gap:8px;\"><span class=\"ds-chip\">TACTICAL ADS &amp; DIVE</span><span class=\"ds-chip ds-chip-badge\">AUTHENTICATED</span></div>",
+      "css": ".ds-chip { font-family: Consolas, 'SF Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: .15em; color: rgba(215,230,245,.82); background: rgba(14,24,36,.65); border: 1px solid rgba(140,180,220,.22); border-radius: 3px; padding: 4px 10px; text-transform: uppercase; } .ds-chip-badge { color: var(--amber, #ffc46b); background: rgba(255,122,26,.15); border-color: rgba(255,140,50,.35); letter-spacing: .18em; }"
+    },
+    {
+      "name": "HUD Panel",
+      "kind": "card",
+      "refersTo": "hud-panel",
+      "description": "Translucent HUD glass — vitals, weapon panel, objective.",
+      "html": "<div class=\"ds-hud-panel\" style=\"width:264px\"><div class=\"ds-row\"><span class=\"ds-lbl\">VITALS</span><span class=\"ds-val\">100</span></div><div class=\"ds-bar\"><i style=\"width:100%\"></i></div></div>",
+      "css": ".ds-hud-panel { background: var(--panel, rgba(8,12,18,.72)); border: 1px solid rgba(255,255,255,.08); clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); padding: 11px 16px 12px 14px; box-shadow: 0 4px 18px rgba(0,0,0,.4); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); font-family: Bahnschrift, 'DIN Alternate', sans-serif; } .ds-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; } .ds-lbl { font-family: Consolas, monospace; font-size: 10px; letter-spacing: .2em; font-weight: 700; color: var(--dim, #8b97a5); } .ds-val { font-family: Consolas, monospace; font-size: 24px; font-weight: 700; color: #eef5fb; } .ds-bar { position: relative; height: 8px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.07); } .ds-bar i { display: block; height: 100%; background: linear-gradient(90deg, #4fd6a2, #7ef0c0); box-shadow: 0 0 12px rgba(90,230,170,.55); }"
+    },
+    {
+      "name": "Touch Button",
+      "kind": "custom",
+      "refersTo": "touch-button",
+      "description": "Thumb-sized round-rect control with mono icon label and state glow.",
+      "html": "<button class=\"ds-tbtn\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#dce9f4\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"5\"/><path d=\"M12 2v4M12 18v4M2 12h4M18 12h4\"/></svg><span>ADS</span></button>",
+      "css": ".ds-tbtn { width: 60px; height: 60px; border-radius: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: rgba(14,22,34,.82); border: 1px solid rgba(160,185,210,.3); box-shadow: 0 4px 18px rgba(0,0,0,.4), inset 0 0 16px rgba(120,170,220,.06); transition: background .08s ease, border-color .08s ease, transform .08s ease; font-family: Consolas, monospace; } .ds-tbtn span { font-size: 9px; font-weight: 700; letter-spacing: .04em; color: rgba(222,237,252,.85); } .ds-tbtn:active { background: rgba(255,122,26,.32); border-color: rgba(255,160,80,.85); box-shadow: 0 0 20px rgba(255,122,26,.4); transform: scale(.95); }"
+    },
+    {
+      "name": "Modal",
+      "kind": "card",
+      "refersTo": "panel-solid",
+      "description": "Centered command modal with orange (or red) classification rail.",
+      "html": "<div class=\"ds-modal\"><h2>PAUSED</h2><p>The sector is holding. For now.</p><button class=\"ds-btn-ghost\">RESUME</button><div class=\"ds-hint\">Press <kbd>ESC</kbd> to resume</div></div>",
+      "css": ".ds-modal { width: min(480px, 92vw); background: var(--panel-solid, rgba(7,10,15,.92)); border-left: 2px solid var(--orange, #ff7a1a); padding: 30px 34px 26px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,.8); font-family: Bahnschrift, 'DIN Alternate', sans-serif; } .ds-modal.danger { border-left-color: var(--red, #ff3b30); } .ds-modal h2 { margin: 0 0 6px; font-size: 58px; font-weight: 800; line-height: .9; letter-spacing: .04em; text-transform: uppercase; color: #e8eef5; } .ds-modal p { font-family: Consolas, monospace; font-size: 12.5px; line-height: 1.65; margin: 10px auto 20px; max-width: 420px; color: var(--dim, #8b97a5); } .ds-hint { margin-top: 18px; font-family: Consolas, monospace; font-size: 10px; letter-spacing: .04em; color: rgba(150,165,180,.6); } .ds-hint kbd { font-family: Consolas, monospace; font-size: 11px; letter-spacing: .08em; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 3px; padding: 1px 6px; } .ds-modal .ds-btn-ghost { display: block; margin: 10px auto 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Field Dossier",
+    "overview": "Every surface reads like a page out of declassified military hardware: stamps, stencils, chain-of-command eyebrows, classification badges, and terse radio copy. The UI is paperwork from a war that is already happening — hard, functional, cinematic-dark. Orange is the classification color and the only voice of command; everything else is steel and shadow. Density is high but honest: micro-labels are deliberately tiny stencil type, while every value a player acts on is a large mono numeral. Depth comes from black ambient shadow, never colored halos — colored light is reserved for state. Corners are cut with clip-path notches, not rounded; nothing in this system is soft.",
+    "keyCharacteristics": [
+      "Stencil micro-labels (mono, uppercase, tracked wide) against large mono data values",
+      "One command color: Muzzle Flash Orange, used at small fractions of any screen",
+      "Cut-corner notched silhouettes (clip-path) instead of rounded cards",
+      "Black depth shadows; zero-offset glow exists only as functional state feedback",
+      "Condensed DIN-family display type over Consolas mono data",
+      "Playable over a live 3D night scene — panels are translucent glass, not opaque blocks"
+    ],
+    "rules": [
+      { "name": "The 5% Orange Rule", "body": "Muzzle Flash Orange covers a small fraction of any screen — a rail, a needle, a stamp, one button. Its rarity is the point; bulk orange fills would turn the command color into decoration.", "section": "colors" },
+      { "name": "The State Light Rule", "body": "Zero-offset colored glow is allowed only as state feedback — health fill, streak-ready button, compass needle, hitmarker, visible-enemy radar blips. Decorative static glows are banned.", "section": "colors" },
+      { "name": "The Stencil Rule", "body": "Wide tracking (0.12em+) belongs to short uppercase labels only. Sentences and body copy read at normal tracking (≤ 0.05em) — wide-tracked paragraphs are a legibility failure, not a mood.", "section": "typography" },
+      { "name": "The Data Speaks Louder Rule", "body": "When a label and its value share a panel, the value is mono, large, and brighter than the label ever is.", "section": "typography" },
+      { "name": "The Night Depth Rule", "body": "Shadows are black with real offset; they describe physical lift over the night yard. Colored light describes state, never shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep orange rare — rails, needles, stamps, one command button per screen.",
+      "Do use cut-corner clip-path notches (12-16px) for command surfaces.",
+      "Do render data values in large mono (24-40px) with stencil labels at the 9.5-10px floor.",
+      "Do reserve zero-offset glow for state feedback only.",
+      "Do keep shadows black, offset, and increasing with importance.",
+      "Do keep the 3D view readable — panel blur at 2-4px, no full-screen pattern overlays."
+    ],
+    "donts": [
+      "Don't add external fonts, images, or audio — everything is procedural or system-stack.",
+      "Don't round cards with large radii; this system cuts corners, it never curls them (max 4px outside touch ergonomics).",
+      "Don't add blinking/pulsing dots or decorative animations to static UI.",
+      "Don't widen letter-spacing on sentences or body copy (≤ 0.05em there).",
+      "Don't drop functional text below 9.5px, or push render resolution below native — sharpness is a product commitment.",
+      "Don't use glossy sci-fi neon (blue/purple gamer RGB), gradients as surface fills, or gray-on-gray low-contrast panels."
+    ]
+  }
+}
