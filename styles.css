@@ -974,6 +974,16 @@ html.touch #touch:not(.hidden){ display: block; }
   width: 60px; height: 60px; border-radius: 50%;
 }
 .tbtn.t-ads .t-icon{ width: 25px; height: 25px; }
+/* Scope is a toggle, so the active state is persistent: no press-scale (that
+   would read as "still held"), a solid amber ring instead. */
+.tbtn.t-ads.on{
+  transform: none;
+  background: rgba(255,122,26,.9);
+  border-color: #ffd7a8;
+  box-shadow: 0 0 0 3px rgba(255,122,26,.28), 0 0 24px rgba(255,122,26,.55); /* taste-skill-ignore: HUD instrument panel */
+}
+.tbtn.t-ads.on .t-icon{ stroke: #1a0d05; }
+.tbtn.t-ads.on .t-lbl{ color: #1a0d05; letter-spacing: .06em; }
 
 .tbtn.t-reload{
   right: calc(108px + env(safe-area-inset-right));

@@ -1245,6 +1245,14 @@ function updateTouchHud() {
     const b = fragBtn.querySelector('b');
     if (b) b.textContent = game.grenades;
   }
+  // Keep the scope toggle honest: if aiming is dropped by the game (death,
+  // reload cancel, menu) the button must not keep claiming SCOPED.
+  const adsBtn = touchEl.querySelector('[data-act="ads"]');
+  if (adsBtn) {
+    adsBtn.classList.toggle('on', weapons.aiming);
+    const lbl = adsBtn.querySelector('.t-lbl');
+    if (lbl) lbl.textContent = weapons.aiming ? 'SCOPED' : 'AIM';
+  }
 }
 
 /* ===================== Custom HUD Layout Management ===================== */
@@ -1572,7 +1580,26 @@ if (touchEl) {
   };
 
   bindHold('fire', () => weapons.startFire(), () => weapons.stopFire());
-  bindHold('ads', () => weapons.setAim(true), () => weapons.setAim(false));
+  // Scope is a tap toggle on touch (mobile-shooter convention): the thumb does
+  // not have to stay pinned on the button to keep aiming, so it is free to
+  // steer and fire. Desktop keeps hold-to-aim on the right mouse button.
+  const adsBtn = act('ads');
+  if (adsBtn) {
+    adsBtn.addEventListener('pointerdown', (e) => {
+      if (isCustomHudMode) return;
+      if (game.mode !== 'playing') return;
+      e.preventDefault();
+      e.stopPropagation();
+      const on = !weapons.aiming;
+      weapons.setAim(on);
+      adsBtn.classList.toggle('on', on);
+      const lbl = adsBtn.querySelector('.t-lbl');
+      if (lbl) lbl.textContent = on ? 'SCOPED' : 'AIM';
+      try { if (navigator.vibrate) navigator.vibrate(on ? 12 : 6); } catch (err) { /* ignore */ }
+    });
+    adsBtn.addEventListener('pointerup', (e) => e.stopPropagation());
+    adsBtn.addEventListener('pointercancel', (e) => e.stopPropagation());
+  }
   bindHold('sprint', () => { touchSprint = true; }, () => { touchSprint = false; });
   bindHold('jump', () => {
     touchJump = true;
