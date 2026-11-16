@@ -668,7 +668,7 @@ input[type=range]::-moz-range-thumb{
 }
 .ctrl{ display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
 .ctrl kbd{ align-self: flex-start; }
-.ctrl span{ font-size: 9.5px; letter-spacing: .16em; color: var(--ink-soft); font-weight: 700; }
+.ctrl span{ font-size: 10.5px; letter-spacing: .14em; color: var(--ink-soft); font-weight: 700; }
 
 /* Keycaps turn to ink chips on paper */
 .dossier-pane kbd, .modal-hint kbd{
@@ -700,7 +700,8 @@ input[type=range]::-moz-range-thumb{
 @keyframes sheetIn{ from{ opacity: 0; transform: translateX(10px); } to{ opacity: 1; transform: none; } }
 
 .record-sheet{
-  border: 1px solid rgba(33,27,18,.35); background: rgba(33,27,18,.045);
+  border: none; border-left: 3px solid var(--paper-accent);
+  background: rgba(33,27,18,.07);
   padding: 14px 16px 15px; display: flex; flex-direction: column; gap: 7px;
   max-width: 460px;
 }
