@@ -12,6 +12,12 @@ colors:
   signal-amber: "#ffc46b"
   alert-red: "#ff3b30"
   go-green: "#58e08a"
+  dossier-paper: "#e8e1cf"
+  paper-ink: "#211b12"
+  paper-soft: "#6d6350"
+  paper-accent: "#8f3f11"
+  paper-red: "#b3271d"
+  paper-line: "rgba(33, 27, 18, .2)"
   threat-line: "rgba(255, 122, 26, .32)"
   soft-line: "rgba(180, 200, 220, .14)"
 typography:
@@ -122,7 +128,8 @@ rounded; nothing in this system is soft.
 - Cut-corner notched silhouettes (clip-path) instead of rounded cards
 - Black depth shadows; zero-offset glow exists only as functional state feedback
 - Condensed DIN-family display type over Consolas mono data
-- Playable over a live 3D night scene — panels are translucent glass, not opaque blocks
+- Two materials only: transparent glass for the live HUD, and paper for the
+  menu and modals — the dossier is an object laid over the yard
 
 ## Colors
 
@@ -151,8 +158,10 @@ warm satellite tones; status colors (red, green) are semantic only.
 ### Neutral
 - **Midnight Black** (#05070b): Page background; the yard's darkness.
 - **Panel Steel** (rgba(8,12,18,.72)): Translucent HUD glass panels.
-- **Panel Solid** (rgba(7,10,15,.92)): Opaque menu cards and modals that must
-  fully separate from the 3D scene.
+- **Panel Solid** (rgba(7,10,15,.92)): opaque surfaces that must fully separate
+  from the 3D scene (the pause/K.I.A. backdrops).
+- **Dossier Paper** (#e8e1cf): the menu sheet and modals — the system's second
+  material, printed two-colour ink on cream stock.
 - **Dossier Ink** (#e8eef5): Primary text on dark surfaces.
 - **Field Dim** (#8b97a5): Secondary text, ghost buttons, quiet labels.
 - **Threat Line** (rgba(255,122,26,.32)): Orange-tinted borders on active/
@@ -189,10 +198,17 @@ numerals are the largest voice on any HUD surface.
   compact small variant.
 - **HUD Value** (700, 40px / -0.03em; health 24px): Ammo counters, health
   number, scoreboard stats — the numbers players act on.
-- **Body** (400, 12.5px, 1.75): Blurbs and modal copy. Mono. Measure ≤ 420px.
+- **Body** (400, 12.5px, 1.75): modal and HUD copy. Mono. Measure ≤ 420px.
+  (The menu's readable paragraph is the exception: UI face, 16px, see Printed
+  body above.)
 - **Label** (700, 9.5–10px, 0.12–0.2em, uppercase): Stencil micro-labels
   (SCORE, ARMOR, VITALS, eyebrows, tags). The 9.5–10px floor is a confirmed
   legibility commitment; below it nothing functional may go.
+- **Printed body** (400, 16px, 1.55, Bahnschrift): the one readable paragraph
+  on the dossier (`.folder-sub`, modal copy); UI face, not mono, capped at 52ch.
+- **Ledger line** (700, 13.5px name / 400 12px description / 700 15px mono
+  value): the menu table. Names and descriptions in the UI face, values in
+  mono so the data still speaks louder.
 
 ### Named Rules
 **The Stencil Rule.** Wide tracking (0.12em+) belongs to short uppercase
@@ -208,20 +224,33 @@ The game is a fixed full-bleed viewport — no page scroll, `overflow: hidden`.
 The HUD is corner-anchored: objective + radar/minimap top (topbar-left /
 top-right), vitals bottom-left, weapon panel bottom-right, scoreboard
 top-center. Panels are absolutely placed with safe-area insets for notched
-phones. The menu is a two-column grid (copy + briefing side card,
-`max-width: 1540px`) with 4vw gutters that collapses to one column under
-900px; the briefing side card hides under 900px, and short landscape phones
-get a compact menu where hero chips and the controls card drop out so DEPLOY
-stays above the fold.
+phones.
+
+The menu is a **physical dossier laid on the yard**: `.folder-stack` holds two
+ghost pages offset behind one cream sheet (max 900px), pull-tabs cut into its
+top edge, and a print strip underneath. The sheet itself is padded on the left
+for a punched gutter (`::before` draws the holes and the red margin rule), and
+all menu content is printed on it in two columns (`1fr 1fr`, 34px gutter) that
+collapse to one column at 760px. The sheet is the page: there is no card inside
+a card, no panel grid.
+
+The menu overlay is a neutral radial scrim (`rgba(3,5,9,.34)` centre to `.96`
+edges), not a black wall, so the lit yard, the truck and the sodium lamps stay
+readable behind the paper — the scene is the photograph this page does not
+otherwise have.
 
 Spacing rhythm steps at 4 / 8 / 16 / 24 / 32px. Touch targets: 46px squares
 for utility buttons, 60px for ADS, 84px circle for FIRE, arranged in clusters
 that must not overlap at any supported viewport (verified at 667×375,
 844×390, 390×844, 1024×768, 1180×820).
 
-Breakpoints: 420px, 760px, 900px, 1080px, plus `pointer: coarse` and
-orientation queries (portrait spreads the touch cluster into two columns;
-landscape ≤ 430px triggers the compact menu).
+Breakpoints: 420px, 760px, 1080px, plus `pointer: coarse` and orientation
+queries. Under 760px the tabs move out of the sheet (`bottom: 100%`) and wrap
+upward over the scrim with a 74px stack top margin, so they never cover the
+form header; under 420px the clip and the issue line drop and the stamp shrinks
+beside the section head. Short landscape phones (≤ 430px tall) hide the title,
+sub, stamp, sheet header, paper clip and options, and compress the ledger to
+25px rows so DEPLOY stays above the fold.
 
 ## Elevation & Depth
 
@@ -231,7 +260,9 @@ subtle depth, modals on the deepest. Colored light never casts shadow;
 colored glow marks state (see The State Light Rule). Over the live 3D scene,
 depth is also communicated by translucency — panels tint the world behind
 them with `backdrop-filter: blur` kept deliberately light (2–4px) so the view
-stays readable.
+stays readable. The paper sheet is the one opaque, shadow-casting object: it is
+laid over the yard, so its depth comes from a single deep cast shadow plus the
+ghost pages behind it, never from glass.
 
 ### Shadow Vocabulary
 - **HUD glass** (`0 4px 18px rgba(0,0,0,.4)` + faint inner tint): resting HUD panels.
@@ -288,15 +319,40 @@ exceeds 4px outside touch ergonomics.
   glow; streak-ready buttons carry an amber border and glow as a call to action
 
 ### Modals
-- **Style:** Panel Solid, centered, 30px 34px 26px padding, 2px orange left
-  rail (red for K.I.A.), 58px headline, mono body ≤ 420px measure, stacked
-  ghost-button actions, mono hint row with kbd chips
+- **Style:** paper sheet (`.modal`), centered, 2px orange top rail (red for
+  K.I.A.), 58px headline, 14px mono body ≤ 420px measure, stacked ghost-button
+  actions, mono hint row with kbd chips
 
-### Signature Component: The Classification Eyebrow
-- **Style:** mono 10px tracked 0.3em uppercase orange line with `//`
-  separators and optional Signal Amber stencil badge — appears atop the menu
-  and briefing cards; it is the system's voiceprint and must survive any
-  future redesign of surrounding surfaces
+### The Dossier Sheet (the menu)
+- **Object:** one cream sheet (`--paper #e8e1cf`) with two ghost pages offset
+  behind it (`.folder-ghost`, 9px / 18px at ±0.3°), a punched gutter drawn on
+  the left (46px, holes every 150px, 1px red margin rule), a paper clip over
+  the top edge, and a `TOP SECRET` stamp in double red ink, rotated 7°.
+- **Header:** `FORM 09-B · OPERATOR BRIEFING` / `ISSUED 04:12 · SECTOR 04` as a
+  typewritten form row with a hairline rule (mono 9.5px, tracked 0.18em).
+- **Tabs:** five pull-tabs cut trapezoid (`clip-path`), sitting on the sheet's
+  top edge; the active tab is the paper colour so it merges with the sheet;
+  hover lifts 4px.
+- **Sections:** each pane is a numbered form section — `01 MISSION DIRECTIVE`
+  via a CSS counter (`decimal-leading-zero`) in the accent ink, heading at 23px
+  UI face. Switching panes slides the sheet content 10px and fades (240ms), the
+  rows stamp in with a 40ms cascade.
+- **Ledger:** two columns of rows with dot leaders (`2px dotted`), name 13.5px,
+  description 12px in the soft ink, value 15px mono right-aligned.
+- **Action:** DEPLOY is a printed sticker — flat orange, hard ink offset shadow
+  (`4px 4px 0 ink`), −0.6° rotation; hover deepens the offset, press flattens it.
+- **Footer:** `ZONE // HOSTILE RELAY` + threat pill inside the sheet; the print
+  strip (`GRID SECTOR 04 · RELAY YARD` / `DESTROY AFTER READING`) sits off the
+  paper on the scrim.
+- **Motion:** the whole stack leans toward the pointer (±1.8° Y, ±1.2° X, rAF
+  throttled, transform only, mouse only) and is disabled under
+  `prefers-reduced-motion`.
+
+### Signature Component: The Stamped Form Header
+- **Style:** the typewritten issue row plus the rotated `TOP SECRET` double-rule
+  stamp in red ink — the dossier's voiceprint, the first thing that says this is
+  paperwork and not a landing page. It replaces the old classification eyebrow
+  and must survive any future redesign of surrounding surfaces.
 
 ## Do's and Don'ts
 
@@ -309,6 +365,9 @@ exceeds 4px outside touch ergonomics.
 - **Do** keep shadows black, offset, and increasing with importance.
 - **Do** keep the 3D view readable — panel blur at 2–4px, no full-screen
   pattern overlays (scanlines were removed deliberately).
+- **Do** keep the menu a real object: paper with a visible edge, punched
+  gutter, printed stamp, ledger rules. On paper, mono is for stencil labels
+  and data values only; sentences use the UI face at 16px.
 
 ### Don't:
 - **Don't** add external fonts, images, or audio — everything is procedural
@@ -319,5 +378,9 @@ exceeds 4px outside touch ergonomics.
 - **Don't** widen letter-spacing on sentences or body copy (≤ 0.05em there).
 - **Don't** drop functional text below 9.5px, or push render resolution below
   native — sharpness is a product commitment.
+- **Don't** put text on the gutter or let tabs overlap the form header: the
+  paper's margin is structure, not decoration.
+- **Don't** introduce a second paper colour, a soft drop shadow on the sticker,
+  or a tilt on touch devices — the object must stay one sheet of one stock.
 - **Don't** use glossy sci-fi neon (blue/purple "gamer RGB"), gradients as
   surface fills, or gray-on-gray low-contrast panels.

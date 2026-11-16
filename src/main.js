@@ -870,6 +870,30 @@ $('deploy').addEventListener('click', () => {
   enterImmersive();
   startGame();
 });
+
+/* The dossier is a physical folder laid on the yard: it leans toward the pointer.
+   Mouse only, transform-only, and off under reduced motion. */
+(() => {
+  const menu = $('menu');
+  const stack = document.querySelector('.folder-stack');
+  if (!menu || !stack) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let raf = 0;
+  const setTilt = (x, y) => {
+    stack.style.setProperty('--tilt-x', (x * 1.8).toFixed(2) + 'deg');
+    stack.style.setProperty('--tilt-y', (y * -1.2).toFixed(2) + 'deg');
+  };
+  menu.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      const r = menu.getBoundingClientRect();
+      setTilt(e.clientX / r.width - 0.5, e.clientY / r.height - 0.5);
+    });
+  });
+  menu.addEventListener('pointerleave', () => setTilt(0, 0));
+})();
 $('resume').addEventListener('click', resumeGame);
 $('pause-restart').addEventListener('click', () => { saveBestRun(); startGame(); });
 $('retry').addEventListener('click', () => startGame());

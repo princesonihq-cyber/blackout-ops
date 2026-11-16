@@ -114,7 +114,7 @@
     <div id="dmg-numbers"></div>
 
     <div id="wave-banner">
-      <div class="banner-kicker">// INCOMING</div>
+      <div class="banner-kicker" data-rule="taste-skill-ignore: wave-banner kicker, in-game HUD">// INCOMING</div>
       <div id="banner-main">WAVE 1</div>
       <div id="banner-sub">HOSTILES INBOUND</div>
     </div>
@@ -128,206 +128,239 @@
     <div id="fps">FPS 60</div>
   </div>
 
-  <!-- ===================== MAIN MENU ===================== -->
+  <!-- ============ MAIN MENU — the mission dossier (page-is-the-object) ============ -->
   <div id="menu" class="overlay">
-    <!-- Top Telemetry Header -->
     <header class="menu-topbar">
       <div class="topbar-left">
-        <span class="status-indicator"><i class="radar-dot"></i> LIVE LINK // DEFENSE PROTOCOL ACTIVE</span>
+        <span class="status-indicator"><i class="radar-dot"></i> LIVE LINK</span>
         <span class="bar-separator">/</span>
-        <span class="sector-tag">GRID: SECTOR 04 RELAY YARD</span>
+        <span class="sector-tag">SECTOR 04 RELAY YARD</span>
       </div>
+      <span class="topbar-mark">BLACKOUT OPS</span>
       <div class="topbar-right">
-        <span class="badge-pill">BUILD v1.3.0 // COD-SPEC</span>
-        <button id="menu-sound-check" class="badge-pill audio-pill" title="Test tactical sound effects">🔊 AUDIO READY</button>
+        <span class="badge-pill">BUILD v1.3.0</span>
+        <button id="menu-sound-check" class="badge-pill audio-pill" title="Test tactical sound effects"><span class="audio-bars" aria-hidden="true"><i></i><i></i><i></i></span> AUDIO</button>
       </div>
     </header>
 
-    <div class="menu-grid">
-      <!-- Main Column: Hero Title & Deploy Actions -->
-      <div class="menu-copy">
-        <div class="eyebrow">
-          <span>TOP SECRET // TIER-ONE DIRECT ACTION</span>
-          <span class="badge-stencil">AUTHENTICATED</span>
-        </div>
+    <div class="folder-stage">
+      <h1 class="folder-title">BLACKOUT OPS</h1>
+      <p class="folder-sub">Operation Nightfall. A wave-survival tactical FPS that runs in your browser &mdash; no install, nothing downloaded. Your aim is the only loadout.</p>
 
-        <h1 class="hero-title">
-          <span class="title-main">BLACKOUT</span>
-          <span class="title-sub">OPS</span>
-        </h1>
+      <section class="folder-stack" aria-label="Mission dossier">
+        <div class="folder-ghost g2" aria-hidden="true"></div>
+        <div class="folder-ghost g1" aria-hidden="true"></div>
 
-        <div class="subhead">OPERATION NIGHTFALL // SURVIVAL DEFENSE</div>
+        <article class="folder-front">
+          <span class="stamp" aria-hidden="true">TOP SECRET</span>
+          <span class="paper-clip" aria-hidden="true"></span>
 
-        <div class="hero-chips">
-          <span class="chip">TACTICAL ADS &amp; DIVE</span>
-          <span class="chip">DYNAMIC 3D PBR</span>
-          <span class="chip">60+ FPS ENGINE</span>
-          <span class="chip">CROSS-PLATFORM</span>
-        </div>
+          <nav class="folder-tabs" aria-label="Dossier sections">
+            <button class="d-tab active" data-dossier="brief">BRIEFING</button>
+            <button class="d-tab" data-dossier="intel">HOSTILE INTEL</button>
+            <button class="d-tab" data-dossier="arsenal">ARSENAL</button>
+            <button class="d-tab" data-dossier="controls">CONTROLS</button>
+            <button class="d-tab" data-dossier="record">RECORD</button>
+          </nav>
 
-        <p class="blurb">
-          The relay yard grid is dark. A hostile PMC cell has breached the sector and they know you're coming.
-          Fortify the relay perimeter, leverage tactical cover, and eliminate every wave.
-          <strong>There is no extraction.</strong>
-        </p>
-
-        <!-- Deploy & Settings Action Bar -->
-        <div class="menu-actions">
-          <button id="deploy" class="btn-primary" aria-label="Deploy into combat">
-            <span class="btn-kicker" id="deploy-kicker">COMMENCE OPERATION</span>
-            <span class="btn-label">DEPLOY <i class="arrow-ico">&raquo;</i></span>
-          </button>
-
-          <button id="gfx-toggle" class="btn-ghost" title="Cycle Graphics Preset (Ultra / High / Balanced)">
-            <span class="btn-kicker">GRAPHICS PRESET</span>
-            <span class="btn-label" id="gfx-val">ULTRA REALISTIC</span>
-          </button>
-
-          <button id="menu-custom-hud" class="btn-ghost" title="Customize on-screen touch controls layout">
-            <span class="btn-kicker">TOUCH LAYOUT</span>
-            <span class="btn-label">CUSTOM HUD</span>
-          </button>
-
-          <div class="sens">
-            <label for="sens">LOOK SENSITIVITY <span id="sens-val">1.0</span></label>
-            <input type="range" id="sens" min="0.3" max="2.2" step="0.05" value="1" />
+          <div class="sheet-meta" aria-hidden="true">
+            <span>FORM 09-B &middot; OPERATOR BRIEFING</span>
+            <span>ISSUED 04:12 &middot; SECTOR 04</span>
           </div>
-        </div>
 
-        <!-- Controls Switcher & Drawer -->
-        <div class="controls-card">
-          <div class="controls-header">
-            <span class="controls-title"><i class="ctrl-dot"></i> COMBAT CONTROLS</span>
+          <!-- Folder: Briefing -->
+          <div id="dossier-brief" class="dossier-pane active">
+            <h2 class="sheet-head">Mission directive</h2>
+            <div class="menu-table">
+              <div class="mrow">
+                <div class="mrow-name">Hold the yard<small>Escalating waves breach the relay perimeter. There is no extraction.</small></div>
+                <i class="lead" aria-hidden="true"></i>
+                <b class="mrow-val">ALL WAVES</b>
+              </div>
+              <div class="mrow">
+                <div class="mrow-name">Headshots<small>Aim for the ballistic visor.</small></div>
+                <i class="lead" aria-hidden="true"></i>
+                <b class="mrow-val">&times;2.6 DMG</b>
+              </div>
+              <div class="mrow">
+                <div class="mrow-name">Health regen<small>Automatic, after five seconds out of contact.</small></div>
+                <i class="lead" aria-hidden="true"></i>
+                <b class="mrow-val">5 SEC</b>
+              </div>
+              <div class="mrow">
+                <div class="mrow-name">Sniper warning<small>Their laser sights telegraph incoming fire.</small></div>
+                <i class="lead" aria-hidden="true"></i>
+                <b class="mrow-val">BREAK LOS</b>
+              </div>
+              <div class="mrow">
+                <div class="mrow-name">Killstreaks<small>Recon sweep, then close-air bombardment.</small></div>
+                <i class="lead" aria-hidden="true"></i>
+                <b class="mrow-val">5 UAV &middot; 10 AIR</b>
+              </div>
+              <div class="mrow">
+                <div class="mrow-name">Movement<small>Dive into low cover. Slide corners while sprinting.</small></div>
+                <i class="lead" aria-hidden="true"></i>
+                <b class="mrow-val">Z / C</b>
+              </div>
+            </div>
+            <div class="sheet-foot">
+              <span>ZONE // HOSTILE RELAY</span>
+              <span class="threat-pill">THREAT: SEVERE</span>
+            </div>
+          </div>
+
+          <!-- Folder: Hostile intel -->
+          <div id="dossier-intel" class="dossier-pane">
+            <h2 class="sheet-head">Hostile intel</h2>
+            <div class="menu-table">
+              <div class="mrow">
+                <div class="mrow-name">Grunt<small>Assault rifleman with laser targeting. Holds mid-range fire.</small></div>
+                <i class="lead" aria-hidden="true"></i>
+                <b class="mrow-val">LOW</b>
+              </div>
+              <div class="mrow">
+                <div class="mrow-name">Rusher<small>High-speed CQB combatant with machete charges. Priority target.</small></div>
+                <i class="lead" aria-hidden="true"></i>
+                <b class="mrow-val hot">HIGH</b>
+              </div>
+              <div class="mrow">
+                <div class="mrow-name">Heavy<small>Armoured suppression infantry. High ballistic resistance.</small></div>
+                <i class="lead" aria-hidden="true"></i>
+                <b class="mrow-val hot">SEVERE</b>
+              </div>
+              <div class="mrow">
+                <div class="mrow-name">Juggernaut<small>Mechanised elite with a rotary minigun. Deploys from wave five.</small></div>
+                <i class="lead" aria-hidden="true"></i>
+                <b class="mrow-val hot">EXTREME</b>
+              </div>
+            </div>
+            <div class="sheet-foot">
+              <span>SOURCE // RECON SWEEP</span>
+              <span class="threat-pill">4 ARCHETYPES</span>
+            </div>
+          </div>
+
+          <!-- Folder: Arsenal -->
+          <div id="dossier-arsenal" class="dossier-pane">
+            <h2 class="sheet-head">Operator weapons</h2>
+            <div class="menu-table">
+              <div class="mrow">
+                <div class="mrow-name">M4A1 Vanguard<small>Reflex red-dot optic, tritium night sight, 30-round mag.</small></div>
+                <i class="lead" aria-hidden="true"></i>
+                <b class="mrow-val">SLOT 1</b>
+              </div>
+              <div class="mrow">
+                <div class="mrow-name">G19 Spec-Ops<small>Fast-draw 9mm tactical sidearm with tritium combat beads.</small></div>
+                <i class="lead" aria-hidden="true"></i>
+                <b class="mrow-val">SLOT 2</b>
+              </div>
+              <div class="mrow">
+                <div class="mrow-name">M249 SAW<small>100-round continuous suppression. Clears the horde.</small></div>
+                <i class="lead" aria-hidden="true"></i>
+                <b class="mrow-val">SLOT 3</b>
+              </div>
+              <div class="mrow">
+                <div class="mrow-name">Equipment<small>M67 frags, UAV radar sweep, cluster bombardment.</small></div>
+                <i class="lead" aria-hidden="true"></i>
+                <b class="mrow-val">G &middot; 4 &middot; 5</b>
+              </div>
+            </div>
+            <div class="sheet-foot">
+              <span>ISSUED // FULL LOADOUT</span>
+              <span class="threat-pill">RESUPPLY EVERY 6 KILLS</span>
+            </div>
+          </div>
+
+          <!-- Folder: Controls -->
+          <div id="dossier-controls" class="dossier-pane">
+            <h2 class="sheet-head">Combat controls</h2>
             <div class="controls-tabs">
               <button class="c-tab active" data-tab="pc">PC KEYBINDS</button>
               <button class="c-tab" data-tab="touch">MOBILE TOUCH</button>
             </div>
-          </div>
 
-          <div id="ctrl-pane-pc" class="controls-pane active">
-            <div class="controls-grid">
-              <div class="ctrl"><kbd>W A S D</kbd><span>MOVE</span></div>
-              <div class="ctrl"><kbd>SHIFT</kbd><span>SPRINT / TAC SPRINT</span></div>
-              <div class="ctrl"><kbd>C / CTRL</kbd><span>CROUCH / SLIDE</span></div>
-              <div class="ctrl"><kbd>Z</kbd><span>PRONE / DIVE</span></div>
-              <div class="ctrl"><kbd>SPACE</kbd><span>JUMP / STAND</span></div>
-              <div class="ctrl"><kbd>N</kbd><span>AUTO-RUN</span></div>
-              <div class="ctrl"><kbd>RMB</kbd><span>AIM DOWN SIGHT</span></div>
-              <div class="ctrl"><kbd>LMB</kbd><span>FIRE</span></div>
-              <div class="ctrl"><kbd>R</kbd><span>RELOAD</span></div>
-              <div class="ctrl"><kbd>1 2 3</kbd><span>WEAPONS (2 SWAP)</span></div>
-              <div class="ctrl"><kbd>F / V</kbd><span>MELEE</span></div>
-              <div class="ctrl"><kbd>G / X</kbd><span>FRAG GRENADE</span></div>
-              <div class="ctrl"><kbd>Q / 4</kbd><span>UAV RECON</span></div>
-              <div class="ctrl"><kbd>5 / 6</kbd><span>AIRSTRIKE</span></div>
-              <div class="ctrl"><kbd>T / E</kbd><span>TACTICAL LIGHT</span></div>
-              <div class="ctrl"><kbd>B</kbd><span>INSPECT WEAPON</span></div>
-            </div>
-          </div>
-
-          <div id="ctrl-pane-touch" class="controls-pane">
-            <div class="touch-controls-guide">
-              <div class="t-guide-card">
-                <b>LEFT JOYSTICK</b>
-                <span>Full 360&deg; movement. Drag forward past 72% for auto-sprint.</span>
-              </div>
-              <div class="t-guide-card">
-                <b>RIGHT SCREEN</b>
-                <span>Drag anywhere to look and aim with smooth ADS sensitivity.</span>
-              </div>
-              <div class="t-guide-card">
-                <b>STANCE BUTTONS</b>
-                <span>Tap CROUCH to crouch/slide; tap PRONE to drop or dive while running.</span>
-              </div>
-              <div class="t-guide-card">
-                <b>TACTICAL ACTIONS</b>
-                <span>Dedicated on-screen buttons for FIRE, ADS, RELOAD, SWAP, KNIFE, FRAG, UAV &amp; AIR.</span>
+            <div id="ctrl-pane-pc" class="controls-pane active">
+              <div class="controls-grid">
+                <div class="ctrl"><kbd>W A S D</kbd><span>MOVE</span></div>
+                <div class="ctrl"><kbd>SHIFT</kbd><span>SPRINT / TAC SPRINT</span></div>
+                <div class="ctrl"><kbd>C / CTRL</kbd><span>CROUCH / SLIDE</span></div>
+                <div class="ctrl"><kbd>Z</kbd><span>PRONE / DIVE</span></div>
+                <div class="ctrl"><kbd>SPACE</kbd><span>JUMP / STAND</span></div>
+                <div class="ctrl"><kbd>N</kbd><span>AUTO-RUN</span></div>
+                <div class="ctrl"><kbd>RMB</kbd><span>AIM DOWN SIGHT</span></div>
+                <div class="ctrl"><kbd>LMB</kbd><span>FIRE</span></div>
+                <div class="ctrl"><kbd>R</kbd><span>RELOAD</span></div>
+                <div class="ctrl"><kbd>1 2 3</kbd><span>WEAPONS (2 SWAP)</span></div>
+                <div class="ctrl"><kbd>F / V</kbd><span>MELEE</span></div>
+                <div class="ctrl"><kbd>G / X</kbd><span>FRAG GRENADE</span></div>
+                <div class="ctrl"><kbd>Q / 4</kbd><span>UAV RECON</span></div>
+                <div class="ctrl"><kbd>5 / 6</kbd><span>AIRSTRIKE</span></div>
+                <div class="ctrl"><kbd>T / E</kbd><span>TACTICAL LIGHT</span></div>
+                <div class="ctrl"><kbd>B</kbd><span>INSPECT WEAPON</span></div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Right Column: Interactive Mission Dossier & Intel Hub -->
-      <div class="menu-side">
-        <div class="brief panel dossier-panel">
-          <div class="dossier-nav">
-            <button class="d-tab active" data-dossier="brief"><i class="d-dot"></i> BRIEFING</button>
-            <button class="d-tab" data-dossier="intel">HOSTILE INTEL</button>
-            <button class="d-tab" data-dossier="arsenal">ARSENAL</button>
-          </div>
-
-          <!-- Dossier: Mission Briefing -->
-          <div id="dossier-brief" class="dossier-pane active">
-            <div class="brief-head"> MISSION DIRECTIVE // NIGHTFALL</div>
-            <ul class="brief-list">
-              <li><b>01</b> <span>Hold the relay yard against escalating waves of hostile forces.</span></li>
-              <li><b>02</b> <span>Headshots deal <strong>2.6&times; damage</strong>. Aim for the ballistic visor.</span></li>
-              <li><b>03</b> <span>Health regenerates automatically after 5 seconds out of contact.</span></li>
-              <li><b>04</b> <span>Laser warning sights telegraph incoming sniper fire. Break line of sight.</span></li>
-              <li><b>05</b> <span>Killstreaks: <strong>5 Kills</strong> = Recon UAV &bull; <strong>10 Kills</strong> = Cluster Airstrike.</span></li>
-              <li><b>06</b> <span>Dive into low cover with <kbd>Z</kbd> or slide corners with <kbd>C</kbd> while sprinting.</span></li>
-            </ul>
-            <div class="brief-foot">
-              <span>ZONE: HOSTILE RELAY</span>
-              <span class="threat-pill">THREAT LEVEL: SEVERE</span>
-            </div>
-          </div>
-
-          <!-- Dossier: Hostile Intel -->
-          <div id="dossier-intel" class="dossier-pane">
-            <div class="brief-head"> ENEMY THREAT CODEX</div>
-            <div class="intel-grid">
-              <div class="intel-card">
-                <div class="intel-badge">GRUNT</div>
-                <div class="intel-desc">Standard assault rifleman with laser targeting. Maintains mid-range fire.</div>
-              </div>
-              <div class="intel-card rusher">
-                <div class="intel-badge">RUSHER</div>
-                <div class="intel-desc">High-speed CQB combatant. Charges with lethal machete strikes. Priority target.</div>
-              </div>
-              <div class="intel-card heavy">
-                <div class="intel-badge">HEAVY</div>
-                <div class="intel-desc">Armored suppression infantry. High ballistic damage resistance.</div>
-              </div>
-              <div class="intel-card juggernaut">
-                <div class="intel-badge">JUGGERNAUT</div>
-                <div class="intel-desc">Elite mechanized boss with rotary minigun and heavy blast plating. Extreme danger.</div>
+            <div id="ctrl-pane-touch" class="controls-pane">
+              <div class="touch-controls-guide">
+                <div class="t-guide-card">
+                  <b>LEFT JOYSTICK</b>
+                  <span>Full 360&deg; movement. Drag forward past 72% for auto-sprint.</span>
+                </div>
+                <div class="t-guide-card">
+                  <b>RIGHT SCREEN</b>
+                  <span>Drag anywhere to look and aim with smooth ADS sensitivity.</span>
+                </div>
+                <div class="t-guide-card">
+                  <b>STANCE BUTTONS</b>
+                  <span>Tap CROUCH to crouch/slide; tap PRONE to drop or dive while running.</span>
+                </div>
+                <div class="t-guide-card">
+                  <b>TACTICAL ACTIONS</b>
+                  <span>Dedicated on-screen buttons for FIRE, ADS, RELOAD, SWAP, KNIFE, FRAG, UAV &amp; AIR.</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Dossier: Arsenal -->
-          <div id="dossier-arsenal" class="dossier-pane">
-            <div class="brief-head"> OPERATOR WEAPON SYSTEMS</div>
-            <div class="arsenal-grid">
-              <div class="arsenal-card">
-                <b>1 // M4A1 VANGUARD</b>
-                <span>Reflex red-dot optic, tritium night sight, 30-round mag, high stability.</span>
-              </div>
-              <div class="arsenal-card">
-                <b>2 // G19 SPEC-OPS</b>
-                <span>Fast-draw 9mm tactical sidearm with tritium combat beads.</span>
-              </div>
-              <div class="arsenal-card">
-                <b>3 // M249 SAW</b>
-                <span>100-round continuous suppression LMG. Clears incoming hordes.</span>
-              </div>
-              <div class="arsenal-card">
-                <b>EQUIPMENT &amp; STREAKS</b>
-                <span>M67 Frag Grenades, UAV Radar Sweep, and Close-Air Support Bombardment.</span>
+          <!-- Folder: Record -->
+          <div id="dossier-record" class="dossier-pane">
+            <h2 class="sheet-head">Combat record</h2>
+            <div class="record-sheet">
+              <span class="record-lbl">BEST OPERATION // THIS DEVICE</span>
+              <strong id="best-stat">WAVE 0 &middot; 0 PTS</strong>
+              <p class="record-note">Your record is stamped here after every run. Clear a wave to bank armour, ammo and frags.</p>
+            </div>
+            <blockquote class="record-quote">&ldquo;Alone in the dark. Still dangerous.&rdquo;</blockquote>
+          </div>
+
+          <!-- Folder front: the action -->
+          <div class="folder-foot">
+            <button id="deploy" class="btn-deploy" aria-label="Deploy into combat" data-rule="taste-skill-ignore: kicker is the command-button label (brand signature)">
+              <span class="btn-kicker" id="deploy-kicker" data-rule="taste-skill-ignore: command-button kicker (brand signature)">COMMENCE OPERATION</span>
+              <span class="btn-label">DEPLOY <span class="arrow-ico">&raquo;</span></span>
+            </button>
+            <div class="menu-opts">
+              <button id="gfx-toggle" class="opt-btn" title="Cycle Graphics Preset (Ultra / High / Balanced)" data-rule="taste-skill-ignore: kicker is the command-button label (brand signature)">
+                <span class="opt-kicker" data-rule="taste-skill-ignore: command-button kicker (brand signature)">GRAPHICS</span>
+                <span class="opt-val" id="gfx-val">ULTRA REALISTIC</span>
+              </button>
+              <button id="menu-custom-hud" class="opt-btn" title="Customize on-screen touch controls layout" data-rule="taste-skill-ignore: kicker is the command-button label (brand signature)">
+                <span class="opt-kicker" data-rule="taste-skill-ignore: command-button kicker (brand signature)">TOUCH LAYOUT</span>
+                <span class="opt-val">CUSTOM HUD</span>
+              </button>
+              <div class="sens">
+                <label for="sens">LOOK SENSITIVITY <b id="sens-val">1.0</b></label>
+                <input type="range" id="sens" min="0.3" max="2.2" step="0.05" value="1" />
               </div>
             </div>
           </div>
-        </div>
+        </article>
+      </section>
 
-        <div class="best-run">
-          <div class="best-run-label"><span class="trophy-ico">&#9733;</span> BEST COMBAT RECORD</div>
-          <span id="best-stat">WAVE 0 &middot; 0 PTS</span>
-        </div>
-
-        <div class="tagline">&ldquo;ALONE IN THE DARK. STILL DANGEROUS.&rdquo;</div>
-      </div>
+      <footer class="menu-print">
+        <span>GRID SECTOR 04 &middot; RELAY YARD</span>
+        <span>DESTROY AFTER READING</span>
+      </footer>
     </div>
   </div>
 
