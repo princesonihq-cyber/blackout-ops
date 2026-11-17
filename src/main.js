@@ -426,6 +426,124 @@ function raycastShot(origin, dir, maxDist) {
 }
 
 /* ============================================================
+   Aim assist — phone-only tracking help
+   ------------------------------------------------------------
+   Thumb aiming cannot hold a bead on a bot that is strafing, so
+   touch players get a soft magnetic pull toward the enemy nearest
+   the reticle while scoped or firing. It never pulls through a
+   wall, it requires the reticle to already be inside a narrow
+   cone, and it is rate-limited so the shot still belongs to the
+   player. Desktop keeps pure mouse aim.
+   ============================================================ */
+
+const ASSIST_KEY = 'bo_aim_assist';
+let aimAssistOn = (() => {
+  try {
+    const saved = localStorage.getItem(ASSIST_KEY);
+    if (saved === '1') return true;
+    if (saved === '0') return false;
+  } catch (e) { /* storage blocked */ }
+  return IS_TOUCH;
+})();
+
+const ASSIST = {
+  hipCone: 0.19,    // rad half-angle from the hip (~11°)
+  adsCone: 0.13,    // tighter scope cone (~7.5°)
+  range: 52,
+  lead: 0.075,      // seconds of enemy travel to lead with
+  rateEdge: 2.4,    // pull rate at the edge of the cone (rad/s approach)
+  rateCore: 5.6,    // pull rate directly on target
+};
+
+const assistTrack = new WeakMap();
+const _aEye = new THREE.Vector3();
+const _aPoint = new THREE.Vector3();
+const _aDir = new THREE.Vector3();
+
+function assistLosBlocked(from, to) {
+  _aDir.copy(to).sub(from);
+  const dist = _aDir.length();
+  if (dist < 0.6) return false;
+  _aDir.multiplyScalar(1 / dist);
+  raycaster.set(from, _aDir);
+  raycaster.near = 0;
+  raycaster.far = Math.max(0.1, dist - 0.35);
+  return raycaster.intersectObjects(world.solids, false).length > 0;
+}
+
+function updateAimAssist(dt) {
+  if (!IS_TOUCH || !aimAssistOn) return;
+  if (game.mode !== 'playing' || player.dead) return;
+  if (player.sprinting || player.sliding) return;
+  if (!weapons.aiming && !weapons.triggerDown) return;
+
+  const scoped = weapons.aimBlend > 0.45;
+  const cone = scoped ? ASSIST.adsCone : ASSIST.hipCone;
+  const cp = Math.cos(player.pitch);
+  const fx = -Math.sin(player.yaw) * cp;
+  const fy = Math.sin(player.pitch);
+  const fz = -Math.cos(player.yaw) * cp;
+
+  _aEye.copy(player.eye);
+
+  let best = null;
+  let bestScore = Infinity;
+  for (const e of enemies.enemies) {
+    if (e.dead || e.removed) continue;
+    const p = e.group.position;
+    // Upper chest: the forgiving body shot, with the helmet right above it.
+    _aPoint.set(p.x, p.y + 1.3, p.z);
+    const dx = _aPoint.x - _aEye.x;
+    const dy = _aPoint.y - _aEye.y;
+    const dz = _aPoint.z - _aEye.z;
+    const dist = Math.hypot(dx, dy, dz);
+    if (dist > ASSIST.range) continue;
+    const dot = (dx * fx + dy * fy + dz * fz) / dist;
+    const ang = Math.acos(clamp(dot, -1, 1));
+    if (ang > cone) continue;
+    const score = ang + dist * 0.0012;
+    if (score < bestScore) {
+      bestScore = score;
+      best = { e, point: new THREE.Vector3(p.x, p.y + 1.3, p.z), dist, ang };
+    }
+  }
+  if (!best) return;
+  if (assistLosBlocked(_aEye, best.point)) return;
+
+  // Track the target's velocity so a strafing bot is led, not chased.
+  let track = assistTrack.get(best.e);
+  if (!track) {
+    track = { x: best.e.group.position.x, z: best.e.group.position.z, vx: 0, vz: 0 };
+    assistTrack.set(best.e, track);
+  }
+  const invDt = dt > 0.0001 ? 1 / dt : 0;
+  const smooth = Math.min(1, dt * 9);
+  track.vx += ((best.e.group.position.x - track.x) * invDt - track.vx) * smooth;
+  track.vz += ((best.e.group.position.z - track.z) * invDt - track.vz) * smooth;
+  track.x = best.e.group.position.x;
+  track.z = best.e.group.position.z;
+  // Ignore teleports and spawn warps rather than leading by 40 metres.
+  if (Math.abs(track.vx) < 14) best.point.x += track.vx * ASSIST.lead;
+  if (Math.abs(track.vz) < 14) best.point.z += track.vz * ASSIST.lead;
+
+  const dx = best.point.x - _aEye.x;
+  const dy = best.point.y - _aEye.y;
+  const dz = best.point.z - _aEye.z;
+
+  let dYaw = Math.atan2(-dx, -dz) - player.yaw;
+  dYaw = Math.atan2(Math.sin(dYaw), Math.cos(dYaw));
+  const dPitch = Math.atan2(dy, Math.hypot(dx, dz)) - player.pitch;
+
+  // Full strength in the middle of the cone, a gentle fade at its edge so the
+  // view never snaps when a target merely crosses the reticle.
+  const t = 1 - clamp(best.ang / cone, 0, 1);
+  const k = Math.min(1, (ASSIST.rateEdge + (ASSIST.rateCore - ASSIST.rateEdge) * t) * dt);
+  player.yaw += dYaw * k;
+  player.pitch = clamp(player.pitch + dPitch * k, -1.45, 1.45);
+  player.placeCamera();
+}
+
+/* ============================================================
    Combat callbacks
    ============================================================ */
 
@@ -904,6 +1022,29 @@ if (gfxBtn) gfxBtn.addEventListener('click', cycleGraphicsTier);
 const pauseGfxBtn = $('pause-gfx-toggle');
 if (pauseGfxBtn) pauseGfxBtn.addEventListener('click', cycleGraphicsTier);
 updateGfxUI();
+
+// Aim assist only exists for thumbs, so the row is not shown on a desktop.
+const assistBtn = $('aim-assist-toggle');
+if (assistBtn) {
+  if (!IS_TOUCH) {
+    assistBtn.classList.add('hidden');
+  } else {
+    const assistVal = $('aim-assist-val');
+    const paintAssist = () => {
+      if (assistVal) assistVal.textContent = aimAssistOn ? 'ON' : 'OFF';
+      assistBtn.setAttribute('aria-pressed', aimAssistOn ? 'true' : 'false');
+      assistBtn.classList.toggle('off', !aimAssistOn);
+    };
+    paintAssist();
+    assistBtn.addEventListener('click', () => {
+      aimAssistOn = !aimAssistOn;
+      try { localStorage.setItem(ASSIST_KEY, aimAssistOn ? '1' : '0'); } catch (e) { /* ignore */ }
+      paintAssist();
+      try { audio.uiClick(); } catch (e) { /* ignore */ }
+      ui.toast(aimAssistOn ? 'AIM ASSIST // ON' : 'AIM ASSIST // OFF');
+    });
+  }
+}
 
 // Landing page interactive tabs & audio test
 const soundCheckBtn = $('menu-sound-check');
@@ -1741,6 +1882,15 @@ if (DEBUG) {
       ui.setEquipment(game.grenades, true, true);
       return;
     }
+    if (d.action === 'assist') {
+      aimAssistOn = !!d.on;
+      return;
+    }
+    if (d.action === 'nudge') {
+      player.look(d.dx || 0, d.dy || 0);
+      player.placeCamera();
+      return;
+    }
     if (d.action === 'state') {
       const alive = enemies.enemies.filter((e) => !e.dead);
       const eye = player.eye;
@@ -1833,6 +1983,7 @@ function updateGame(dt) {
   };
 
   player.update(dt, input);
+  updateAimAssist(dt);
   enemies.update(dt, player, elapsed);
   weapons.update(dt, player);
   effects.update(dt);

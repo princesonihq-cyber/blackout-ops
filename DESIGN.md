@@ -317,6 +317,16 @@ exceeds 4px outside touch ergonomics.
   Panel Steel with Soft Line borders, mono 9px icon labels at 0.04em
 - **State:** active/pressed turns orange-tinted with the functional state
   glow; streak-ready buttons carry an amber border and glow as a call to action
+- **Scope (ADS):** a tap toggle, not a hold — the thumb must be free to steer
+  and fire. While scoped the button keeps a solid amber fill, dark icon and the
+  label `SCOPED` (no press-scale, since it is not being held); the state is
+  synced from `weapons.aiming` so a game-side drop cannot leave it stuck on.
+- **Aim assist:** phone-only, on by default, persisted as `bo_aim_assist`. Soft
+  magnetic pull toward the hostile nearest the reticle while scoped or firing;
+  needs the reticle inside an ~11° (hip) / ~7.5° (scoped) cone with clear line
+  of sight, leads the target's velocity, and is rate-limited. Off during sprint
+  and slide. The dossier exposes it as a full-width ruled ON/OFF row so the
+  setting reads as a form field, not a floating switch.
 
 ### Modals
 - **Style:** paper sheet (`.modal`), centered, 2px orange top rail (red for

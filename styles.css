@@ -623,6 +623,7 @@ kbd{
 .opt-btn:hover{ background: var(--ink); border-color: var(--ink); color: var(--paper); }
 .opt-kicker{ font-family: var(--mono); font-size: 9px; letter-spacing: .22em; font-weight: 700; color: var(--ink-soft); } /* taste-skill-ignore */
 .opt-btn:hover .opt-kicker{ color: rgba(232,225,207,.6); }
+.opt-btn.off .opt-val{ color: var(--ink-soft); }
 .opt-val{ font-family: var(--mono); font-size: 11.5px; font-weight: 700; letter-spacing: .06em; } /* taste-skill-ignore */
 
 .sens{ min-width: 170px; }
@@ -1253,7 +1254,15 @@ html.touch .scoreboard{
   .d-tab{ padding: 11px 13px 10px; }
   .folder-foot{ flex-direction: column; align-items: stretch; }
   .btn-deploy{ align-items: center; }
-  .opt-btn{ flex: 1; }
+  /* Three options do not fit as equal thirds on a phone; the dossier form
+     rhythm suits a two-up pair plus a full-width ruled toggle. */
+  .menu-opts{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .opt-btn{ flex: none; }
+  .sens{ grid-column: 1 / -1; min-width: 0; }
+  #aim-assist-toggle{
+    grid-column: 1 / -1;
+    flex-direction: row; align-items: center; justify-content: space-between;
+  }
 }
 
 /* Short landscape phones: the folder compacts so DEPLOY stays reachable
